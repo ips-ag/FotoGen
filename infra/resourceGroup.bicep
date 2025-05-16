@@ -13,13 +13,13 @@ param location string = resourceGroup().location
 param tags object = resourceGroup().tags
 
 @description('Optional. Log Analytics workspace resource name.')
-param logAnalyticsName string = 'law-${projectname}-${env}'
+param logAnalyticsName string = 'law-${projectName}-${env}'
 
 @description('Optional. Application Insights resource name.')
-param appInsightsName string = 'ai-${projectname}-${env}'
+param appInsightsName string = 'ai-${projectName}-${env}'
 
 @description('Optional. The name of the App Service Plan to create.')
-param appServicePlanName string = 'asp-${projectname}-${env}'
+param appServicePlanName string = 'asp-${projectName}-${env}'
 
 @description('Optional. The SKU for the App Service Plan.')
 @allowed([
@@ -29,13 +29,13 @@ param appServicePlanName string = 'asp-${projectname}-${env}'
 param appServicePlanSku string = 'B1'
 
 @description('Optional. The name of the UI App Service to create.')
-param uiWebAppName string = 'app-${projectname}-ui-${env}'
+param uiWebAppName string = 'app-${projectName}-ui-${env}'
 
 @description('Optional. The name of the API App Service to create.')
-param apiWebAppName string = 'app-${projectname}-api-${env}'
+param apiWebAppName string = 'app-${projectName}-api-${env}'
 
 @description('Optional. The name of the Storage Account to create.')
-param storageAccountName string = 'sto${projectname}${env}'
+param storageAccountName string = 'sto${projectName}${env}'
 
 @description('Optional. Indicates number fo days to retain deleted items (containers, blobs, snapshosts, versions). Default value is 7')
 param daysSoftDelete int = 7
