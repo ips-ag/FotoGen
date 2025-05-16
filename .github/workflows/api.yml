@@ -61,5 +61,5 @@ jobs:
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v3
         with:
-          app-name: app-projectestimate-api-dev
+          app-name: app-${{ secrets.PROJECT_NAME }}-api-dev
           package: api
