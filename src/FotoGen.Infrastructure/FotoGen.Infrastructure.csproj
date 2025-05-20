@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\FotoGen.Application\FotoGen.Application.csproj" />
+  </ItemGroup>
+
 </Project>
