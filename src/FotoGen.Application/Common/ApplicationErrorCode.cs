@@ -2,6 +2,8 @@ namespace FotoGen.Application.Common
 {
     public enum ApplicationErrorCode
     {
-        UnauthorizedAccess
+        UnauthorizedAccess,
+        Validation,
+        Forbidden
     }
 }

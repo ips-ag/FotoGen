@@ -4,14 +4,15 @@ namespace FotoGen.Application.Common
 {
     public class ApplicationErrorMessage
     {
-        private static readonly Dictionary<ApplicationErrorCode, ErrorInfo> _errors = new()
+        private static readonly Dictionary<ApplicationErrorCode, string> _errors = new()
         {
-            { ApplicationErrorCode.UnauthorizedAccess, new ErrorInfo { Message = "You do not have access to this resource.", StatusCode = StatusCodes.Status403Forbidden } },
+            { ApplicationErrorCode.UnauthorizedAccess, "You do not have access to this resource." },
+            { ApplicationErrorCode.Validation, "Validation failed." },
         };
 
-        public static ErrorInfo Get(ApplicationErrorCode code) =>
+        public static string Get(ApplicationErrorCode code) =>
             _errors.TryGetValue(code, out var error)
                 ? error
-                : new ErrorInfo { Message = "Unknown error.", StatusCode = StatusCodes.Status500InternalServerError };
+                : "Unknown error.";
     }
 }
