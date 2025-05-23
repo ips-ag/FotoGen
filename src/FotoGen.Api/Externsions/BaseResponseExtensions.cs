@@ -1,4 +1,4 @@
-using FotoGen.Application.Common;
+using FotoGen.Common;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FotoGen.Externsions
@@ -12,9 +12,9 @@ namespace FotoGen.Externsions
 
             return response.ErrorCode switch
             {
-                nameof(ApplicationErrorCode.Validation) => new BadRequestObjectResult(response),
-                nameof(ApplicationErrorCode.UnauthorizedAccess) => new UnauthorizedObjectResult(response),
-                nameof(ApplicationErrorCode.Forbidden) => new ObjectResult(response) { StatusCode = StatusCodes.Status403Forbidden },
+                nameof(ErrorCode.Validation) => new BadRequestObjectResult(response),
+                nameof(ErrorCode.UnauthorizedAccess) => new UnauthorizedObjectResult(response),
+                nameof(ErrorCode.Forbidden) => new ObjectResult(response) { StatusCode = StatusCodes.Status403Forbidden },
                 _ => new ObjectResult(response) { StatusCode = StatusCodes.Status500InternalServerError }
             };
         }

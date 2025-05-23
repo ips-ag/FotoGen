@@ -6,12 +6,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\FotoGen.Application\FotoGen.Application.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Replicate\UseModel\" />
-  </ItemGroup>
-
 </Project>

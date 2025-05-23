@@ -1,4 +1,4 @@
-namespace FotoGen.Application.Common
+namespace FotoGen.Common
 {
     public class ErrorInfo
     {

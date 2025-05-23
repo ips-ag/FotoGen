@@ -1,4 +1,4 @@
-namespace FotoGen.Application.Common
+namespace FotoGen.Common
 {
     public class BaseResponse<T>
     {
@@ -15,9 +15,9 @@ namespace FotoGen.Application.Common
             Message = message ?? string.Empty,
             ErrorCode = null
         };
-        public static BaseResponse<T> Fail(ApplicationErrorCode errorCode)
+        public static BaseResponse<T> Fail(ErrorCode errorCode)
         {
-            var errorInfo = ApplicationErrorMessage.Get(errorCode);
+            var errorInfo = ErrorMessage.Get(errorCode);
             return new()
             {
                 IsSuccess = false,
@@ -29,7 +29,7 @@ namespace FotoGen.Application.Common
             new()
             {
                 IsSuccess = false,
-                ErrorCode = ApplicationErrorCode.Validation.ToString(),
+                ErrorCode = Common.ErrorCode.Validation.ToString(),
                 Message = "Validation failed",
                 Errors = errors
             };

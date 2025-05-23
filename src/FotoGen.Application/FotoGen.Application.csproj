@@ -7,15 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FotoGen.Common\FotoGen.Common.csproj" />
     <ProjectReference Include="..\FotoGen.Domain\FotoGen.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Interfaces\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="FluentValidation"/>
+    <PackageReference Include="FluentValidation" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
   </ItemGroup>
 
