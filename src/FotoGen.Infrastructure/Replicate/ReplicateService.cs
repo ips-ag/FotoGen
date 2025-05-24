@@ -3,6 +3,7 @@ using System.Text.Json;
 using FotoGen.Application.Interfaces;
 using FotoGen.Common;
 using FotoGen.Common.Contracts.Replicated.CreateModel;
+using FotoGen.Domain.Interfaces;
 using FotoGen.Infrastructure.Replicate.CreateModel;
 using FotoGen.Infrastructure.Settings;
 using Microsoft.Extensions.Options;

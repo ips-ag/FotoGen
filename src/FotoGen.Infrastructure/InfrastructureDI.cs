@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using FotoGen.Application.Interfaces;
+using FotoGen.Domain.Interfaces;
 using FotoGen.Infrastructure.Replicate;
 using FotoGen.Infrastructure.Settings;
 using Microsoft.Extensions.Configuration;

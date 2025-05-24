@@ -5,6 +5,7 @@ namespace FotoGen.Common
         UnauthorizedAccess,
         Validation,
         Forbidden,
-        CreateReplicateModelFail
+        CreateReplicateModelFail,
+        TrainReplicateModelFail
     }
 }
