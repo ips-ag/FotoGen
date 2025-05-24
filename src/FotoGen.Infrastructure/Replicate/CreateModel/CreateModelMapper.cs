@@ -16,12 +16,5 @@ namespace FotoGen.Infrastructure.Replicate.CreateModel
                 Visibility = settings.Visibility
             };
         }
-        public static CreateReplicateModelResultDto ToResultDto(CreateModelResponse response)
-        {
-            return new CreateReplicateModelResultDto
-            {
-                Url = response.Url
-            };
-        }
     }
 }
