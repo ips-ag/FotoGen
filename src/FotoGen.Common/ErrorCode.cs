@@ -6,6 +6,7 @@ namespace FotoGen.Common
         Validation,
         Forbidden,
         CreateReplicateModelFail,
+        GetReplicateTrainModelFail,
         TrainReplicateModelFail
     }
 }

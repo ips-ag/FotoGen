@@ -6,13 +6,14 @@ namespace FotoGen.Domain.Entities
     {
         public string Id { get; private set; } = default!;
         public string ReplicateModelModelId { get; private set; } = default!;
+        public string UserId { get; private set; } = default!;
         public string ImageUrl { get; private set; } = default!;
         public string TriggerWords { get; private set; } = default!;
-        public TrainModelStatus Status {  get; private set; }
+        public TrainModelStatus Status {  get; set; }
         public DateTime CreatedAt { get; private set; }
-        public DateTime? CompletedAt {  get; private set; }
+        public DateTime? SuccessedAt {  get; set; }
         public string? CanceledUrl {  get; private set; }
-        public TrainModelEntity(string id, string replicateModelModelId, string imageUrl, string triggerWords, TrainModelStatus status, string? canceledUrl = null, DateTime? completedAt = null)
+        public TrainModelEntity(string id, string replicateModelModelId, string imageUrl, string triggerWords, TrainModelStatus status, string? canceledUrl = null, DateTime? SuccessedAt = null)
         {
             Id = id;
             ReplicateModelModelId = replicateModelModelId;
@@ -20,7 +21,7 @@ namespace FotoGen.Domain.Entities
             TriggerWords = triggerWords;
             Status = status;
             CreatedAt = DateTime.UtcNow;
-            CompletedAt = completedAt;
+            this.SuccessedAt = SuccessedAt;
             CanceledUrl = canceledUrl;
         }
     }
