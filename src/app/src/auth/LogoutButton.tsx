@@ -2,12 +2,13 @@ import { useMsal } from "@azure/msal-react";
 import "./LogoutButton.css";
 
 export const LogoutButton = () => {
-  const { instance } = useMsal();
+  const { instance, accounts } = useMsal();
 
   const handleLogout = () => {
-    instance.logoutPopup().catch((e) => {
-      console.error(e);
-    });
+    if (accounts.length > 0) {
+      instance.clearCache();
+      window.location.reload();
+    }
   };
 
   return (
