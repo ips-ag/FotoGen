@@ -4,7 +4,7 @@ import "./ProfileData.css";
 
 interface User {
   name?: string;
-  userPrincipalName?: string;
+  email?: string;
   displayName?: string;
 }
 
@@ -14,11 +14,11 @@ export const ProfileData = () => {
 
   useEffect(() => {
     if (accounts && accounts.length > 0) {
-      // Get the first account (single tenant, so there should only be one)
       const account = accounts[0];
+      const email = (account.idTokenClaims?.email as string) || account.username;
       setUser({
         name: account.name,
-        userPrincipalName: account.username,
+        email: email,
         displayName: account.name,
       });
     }
@@ -31,7 +31,7 @@ export const ProfileData = () => {
   return (
     <div className="profile-data">
       <h3>Welcome, {user.displayName || user.name}!</h3>
-      <p>Signed in as: {user.userPrincipalName}</p>
+      <p>Signed in as: {user.email}</p>
     </div>
   );
 };
