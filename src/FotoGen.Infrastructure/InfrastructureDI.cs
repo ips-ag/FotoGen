@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Headers;
 using FotoGen.Application.Interfaces;
 using FotoGen.Infrastructure.Replicate;
@@ -21,6 +22,12 @@ namespace FotoGen.Infrastructure
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", settings.Token);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             });
+            services.AddHttpClient<IDownloadClient, DownloadClient>().ConfigurePrimaryHttpMessageHandler(
+                () => new HttpClientHandler
+                {
+                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                    AllowAutoRedirect = true
+                });
         }
     }
 }

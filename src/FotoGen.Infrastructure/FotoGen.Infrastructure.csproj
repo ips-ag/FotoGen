@@ -10,8 +10,4 @@
     <ProjectReference Include="..\FotoGen.Application\FotoGen.Application.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Replicate\UseModel\" />
-  </ItemGroup>
-
 </Project>

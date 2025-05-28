@@ -5,9 +5,11 @@ using FotoGen.Common;
 using FotoGen.Common.Contracts.Replicated.CreateModel;
 using FotoGen.Common.Contracts.Replicated.GetTrainedModelStatus;
 using FotoGen.Common.Contracts.Replicated.TrainModel;
+using FotoGen.Common.Contracts.Replicated.UseModel;
 using FotoGen.Infrastructure.Replicate.CreateModel;
 using FotoGen.Infrastructure.Replicate.GetTrainModelStatus;
 using FotoGen.Infrastructure.Replicate.TrainModel;
+using FotoGen.Infrastructure.Replicate.UseModel;
 using FotoGen.Infrastructure.Settings;
 using Microsoft.Extensions.Options;
 
@@ -33,6 +35,21 @@ namespace FotoGen.Infrastructure.Replicate
                 return BaseResponse<bool>.Fail(ErrorCode.CreateReplicateModelFail);
             }
             return BaseResponse<bool>.Success(true);
+        }
+
+        public async Task<BaseResponse<UseModelResponseDto>> GeneratePhotoAsync(string prompt, string modelName)
+        {
+            var input = UseModelMapper.ToInput(prompt, modelName, _replicateSetting);
+            var json = JsonSerializer.Serialize(input);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync("/predictions", content);
+            if (!response.IsSuccessStatusCode)
+            {
+                return BaseResponse<UseModelResponseDto>.Fail(ErrorCode.GeneratePhotoFail);
+            }
+            var contentResponse = await response.Content.ReadAsStringAsync();
+            var useModelResponse = JsonSerializer.Deserialize<UseModelResponse>(contentResponse);
+            return BaseResponse<UseModelResponseDto>.Success(UseModelMapper.ToResponseDto(useModelResponse));
         }
 
         public async Task<BaseResponse<bool>> GetModelAsync(string name)

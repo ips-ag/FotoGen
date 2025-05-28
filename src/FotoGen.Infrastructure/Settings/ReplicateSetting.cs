@@ -11,5 +11,7 @@ namespace FotoGen.Infrastructure.Settings
         public string Owner { get; init; }
         public string Visibility { get; init; }
         public int TimeoutSeconds { get; init; }
+        public string Mode {  get; init; }
+        public string OutputFormat { get; init; }
     }
 }
