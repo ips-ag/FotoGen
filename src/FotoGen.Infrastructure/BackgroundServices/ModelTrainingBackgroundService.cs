@@ -14,7 +14,7 @@ namespace FotoGen.Infrastructure.BackgroundServices
         private readonly ILogger<ModelTrainingBackgroundService> _logger;
         private readonly IServiceProvider _serviceProvider;
         private readonly TimeSpan _checkInterval = TimeSpan.FromMinutes(5);
-        private const int MaxConsecutiveErrors = 5;
+        private const int MaxConsecutiveErrors = 0;
 
         public ModelTrainingBackgroundService(
             ILogger<ModelTrainingBackgroundService> logger,

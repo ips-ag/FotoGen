@@ -4,6 +4,7 @@ namespace FotoGen.Domain.ValueObjects
     {
         Starting,
         Succeeded,
+        Canceled,
         Failed
     }
 }
