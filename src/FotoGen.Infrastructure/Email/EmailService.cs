@@ -14,14 +14,16 @@ namespace FotoGen.Infrastructure.Email
             _settings = settings.Value;
             _logger = logger;
         }
-        public Task SendTrainingCompletedEmailAsync(string email, string modelName)
+        public async Task SendTrainingCompletedEmailAsync(string email, string modelName)
         {
-            throw new NotImplementedException();
+            Console.WriteLine($"Email has sent to {email} for model {modelName}");
+            await Task.CompletedTask;
         }
 
-        public Task SendTrainingFailedEmailAsync(string email, string modelName, string error)
+        public async Task SendTrainingFailedEmailAsync(string email, string modelName, string error)
         {
-            throw new NotImplementedException();
+            Console.WriteLine($"Email has sent to {email} for model {modelName} wiht error {error}");
+            await Task.CompletedTask;
         }
     }
 }

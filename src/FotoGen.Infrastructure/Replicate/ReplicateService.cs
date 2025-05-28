@@ -65,7 +65,7 @@ namespace FotoGen.Infrastructure.Replicate
 
         public async Task<BaseResponse<GetTrainedModelStatusResponseDto>> GetTrainModelStatusAsync(string trainModelId)
         {
-            var getUrl = $"/trainings/{trainModelId}";
+            var getUrl = $"trainings/{trainModelId}";
             var response = await _httpClient.GetAsync(getUrl);
             if (!response.IsSuccessStatusCode)
             {

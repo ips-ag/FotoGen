@@ -14,7 +14,7 @@ namespace FotoGen.Infrastructure.BackgroundServices
         private readonly ILogger<ModelTrainingBackgroundService> _logger;
         private readonly IServiceProvider _serviceProvider;
         private readonly TimeSpan _checkInterval = TimeSpan.FromMinutes(5);
-        private const int MaxConsecutiveErrors = 0;
+        private const int MaxConsecutiveErrors = 5;
 
         public ModelTrainingBackgroundService(
             ILogger<ModelTrainingBackgroundService> logger,
@@ -68,11 +68,11 @@ namespace FotoGen.Infrastructure.BackgroundServices
                                 continue;
                             }
 
-                            if (!Enum.TryParse<TrainModelStatus>(trainedModelResult?.Status, out var newStatus) ||
+                            if (!Enum.TryParse<TrainModelStatus>(trainedModelResult?.Status, ignoreCase: true, out var newStatus) ||
                                 !Enum.IsDefined(newStatus))
                             {
                                 _logger.LogWarning("Invalid status '{Status}' received for model {ModelId}",
-                                    statusResult.Data, trainedModel.Id);
+                                    trainedModelResult?.Status, trainedModel.Id);
                                 continue;
                             }
                             if (newStatus != trainedModel.Status)
@@ -92,7 +92,7 @@ namespace FotoGen.Infrastructure.BackgroundServices
                                         trainedModelResult.Version,
                                         userEmail));
                                 }
-                                else if (newStatus == TrainModelStatus.Canceled)
+                                else if (newStatus == TrainModelStatus.Failed)
                                 {
                                     await mediator.Publish(new ModelTrainingFailedEvent(
                                         trainedModelResult.Id,

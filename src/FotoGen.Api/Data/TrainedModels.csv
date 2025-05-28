@@ -1,3 +1,3 @@
 Id,ModelName,UserEmail,ImageUrl,TriggerWord,Status,CreatedAt,SuccessedAt,CanceledUrl
-vytn2aq645rme0cq2q6az1erym,e8f678ce-1087-4411-a887-6fa6622e1a42,abc@gmail.com,https://fotogen.blob.core.windows.net/train/train-model.zip,e,Starting,2025-05-28T07:30:44.2869721Z,,https://api.replicate.com/v1/predictions/vytn2aq645rme0cq2q6az1erym/cancel
+vytn2aq645rme0cq2q6az1erym,e8f678ce-1087-4411-a887-6fa6622e1a42,abc@gmail.com,https://fotogen.blob.core.windows.net/train/train-model.zip,e,Failed,2025-05-28T07:30:44.2869721Z,,https://api.replicate.com/v1/predictions/vytn2aq645rme0cq2q6az1erym/cancel
 vytn2aq645rme0cq2q6az1erym,e8f678ce-1087-4411-a887-6fa6622e1a42,abc@gmail.com,https://fotogen.blob.core.windows.net/train/train-model.zip,e,Starting,2025-05-28T07:39:10.4507971Z,,https://api.replicate.com/v1/predictions/vytn2aq645rme0cq2q6az1erym/cancel
