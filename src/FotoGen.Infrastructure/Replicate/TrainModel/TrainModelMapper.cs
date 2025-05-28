@@ -20,7 +20,7 @@ namespace FotoGen.Infrastructure.Replicate.TrainModel
                     Resolution = "512,768,1024",
                     AutoCaption = true,
                     InputImages = request.ImageUrl,
-                    TriggerWord = request.TriggerWords,
+                    TriggerWord = request.TriggerWord,
                     LearningRate = 0.0004,
                     WandbProject = "flux_train_replicate",
                     WandbSaveInterval = 100,

@@ -35,6 +35,17 @@ namespace FotoGen.Infrastructure.Replicate
             return BaseResponse<bool>.Success(true);
         }
 
+        public async Task<BaseResponse<bool>> GetModelAsync(string name)
+        {
+            var url = $"/{_replicateSetting.Owner}/{name}";
+            var response = await _httpClient.GetAsync(url);
+            if (!response.IsSuccessStatusCode)
+            {
+                return BaseResponse<bool>.Fail(ErrorCode.GetReplicateModelFail);
+            }
+            return BaseResponse<bool>.Success(true);
+        }
+
         public async Task<BaseResponse<GetTrainedModelStatusResponseDto>> GetTrainModelStatusAsync(string trainModelId)
         {
             var getUrl = $"/trainings/{trainModelId}";

@@ -38,7 +38,7 @@ namespace FotoGen.Infrastructure.BackgroundServices
                     var modelRepository = scope.ServiceProvider.GetRequiredService<ITrainedModelRepository>();
                     var replicateClient = scope.ServiceProvider.GetRequiredService<IReplicateService>();
                     var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-                    var modelsInTraining = await modelRepository.GetByStatusAsync(TrainModelStatus.starting);
+                    var modelsInTraining = await modelRepository.GetByStatusAsync(TrainModelStatus.Starting);
 
                     if (modelsInTraining.Count == 0)
                     {
@@ -78,13 +78,13 @@ namespace FotoGen.Infrastructure.BackgroundServices
                             if (newStatus != trainedModel.Status)
                             {
                                 trainedModel.Status = newStatus;
-                                trainedModel.SuccessedAt = newStatus == TrainModelStatus.succeeded ? DateTime.UtcNow : null;
+                                trainedModel.SuccessedAt = newStatus == TrainModelStatus.Succeeded ? DateTime.UtcNow : null;
                                 await modelRepository.UpdateAsync(trainedModel);
 
                                 //TODO how to get user's email
                                 var userEmail = "user@example.com";
                                 
-                                if (newStatus == TrainModelStatus.succeeded)
+                                if (newStatus == TrainModelStatus.Succeeded)
                                 {
                                     await mediator.Publish(new ModelTrainingSucceededEvent(
                                         trainedModelResult.Id,
@@ -92,7 +92,7 @@ namespace FotoGen.Infrastructure.BackgroundServices
                                         trainedModelResult.Version,
                                         userEmail));
                                 }
-                                else if (newStatus == TrainModelStatus.canceled)
+                                else if (newStatus == TrainModelStatus.Canceled)
                                 {
                                     await mediator.Publish(new ModelTrainingFailedEvent(
                                         trainedModelResult.Id,

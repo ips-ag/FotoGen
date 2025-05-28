@@ -8,6 +8,7 @@ namespace FotoGen.Application.Interfaces
 {
     public interface IReplicateService 
     {
+        public Task<BaseResponse<bool>> GetModelAsync(string name);
         public Task<BaseResponse<bool>> CreateReplicateModelAsync(CreateReplicateModelRequestDto request);
         public Task<BaseResponse<TrainModelResponseDto>> TrainModelAsync(TrainModelRequestDto request);
         public Task<BaseResponse<GetTrainedModelStatusResponseDto>> GetTrainModelStatusAsync(string trainModelId);

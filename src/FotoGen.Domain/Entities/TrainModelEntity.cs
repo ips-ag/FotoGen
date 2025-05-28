@@ -5,7 +5,7 @@ namespace FotoGen.Domain.Entities
     public class TrainModelEntity
     {
         public string Id { get; private set; } = default!;
-        public string ReplicateModelModelId { get; private set; } = default!;
+        public string ModelName { get; private set; } = default!;
         public string UserId { get; private set; } = default!;
         public string ImageUrl { get; private set; } = default!;
         public string TriggerWords { get; private set; } = default!;
@@ -16,7 +16,7 @@ namespace FotoGen.Domain.Entities
         public TrainModelEntity(string id, string replicateModelModelId, string imageUrl, string triggerWords, TrainModelStatus status, string? canceledUrl = null, DateTime? SuccessedAt = null)
         {
             Id = id;
-            ReplicateModelModelId = replicateModelModelId;
+            ModelName = replicateModelModelId;
             ImageUrl = imageUrl;
             TriggerWords = triggerWords;
             Status = status;
