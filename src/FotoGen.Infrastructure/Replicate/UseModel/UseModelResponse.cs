@@ -1,67 +1,68 @@
-using Newtonsoft.Json;
+
+using System.Text.Json.Serialization;
 
 namespace FotoGen.Infrastructure.Replicate.UseModel
 {
     public class UseModelResponse
     {
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public string Id { get; set; }
 
-        [JsonProperty("model")]
+        [JsonPropertyName("model")]
         public string Model { get; set; }
 
-        [JsonProperty("version")]
+        [JsonPropertyName("version")]
         public string Version { get; set; }
 
-        [JsonProperty("input")]
+        [JsonPropertyName("input")]
         public InputData Input { get; set; }
 
-        [JsonProperty("logs")]
+        [JsonPropertyName("logs")]
         public string Logs { get; set; }
 
-        [JsonProperty("output")]
+        [JsonPropertyName("output")]
         public object Output { get; set; }
 
-        [JsonProperty("data_removed")]
+        [JsonPropertyName("data_removed")]
         public bool DataRemoved { get; set; }
 
-        [JsonProperty("error")]
+        [JsonPropertyName("error")]
         public object Error { get; set; }
 
-        [JsonProperty("status")]
+        [JsonPropertyName("status")]
         public string Status { get; set; }
 
-        [JsonProperty("created_at")]
+        [JsonPropertyName("created_at")]
         public DateTime CreatedAt { get; set; }
 
-        [JsonProperty("urls")]
+        [JsonPropertyName("urls")]
         public Urls Urls { get; set; }
     }
 
     public class InputData
     {
-        [JsonProperty("model")]
+        [JsonPropertyName("model")]
         public string Model { get; set; }
 
-        [JsonProperty("output_format")]
+        [JsonPropertyName("output_format")]
         public string OutputFormat { get; set; }
 
-        [JsonProperty("prompt")]
+        [JsonPropertyName("prompt")]
         public string Prompt { get; set; }
     }
 
     public class Urls
     {
-        [JsonProperty("cancel")]
+        [JsonPropertyName("cancel")]
         public string Cancel { get; set; }
 
-        [JsonProperty("get")]
+        [JsonPropertyName("get")]
         public string Get { get; set; }
 
-        [JsonProperty("stream")]
+        [JsonPropertyName("stream")]
         public string Stream { get; set; }
 
-        [JsonProperty("web")]
+        [JsonPropertyName("web")]
         public string Web { get; set; }
     }
 }

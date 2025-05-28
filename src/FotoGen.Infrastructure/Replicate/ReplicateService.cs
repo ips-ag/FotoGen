@@ -29,7 +29,7 @@ namespace FotoGen.Infrastructure.Replicate
             var requestModel = CreateModelMapper.ToRequest(dto, _replicateSetting);
             var json = JsonSerializer.Serialize(requestModel);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync("/models", content);
+            var response = await _httpClient.PostAsync("models", content);
             if (!response.IsSuccessStatusCode)
             {
                 return BaseResponse<bool>.Fail(ErrorCode.CreateReplicateModelFail);
@@ -42,7 +42,7 @@ namespace FotoGen.Infrastructure.Replicate
             var input = UseModelMapper.ToInput(prompt, modelName, _replicateSetting);
             var json = JsonSerializer.Serialize(input);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync("/predictions", content);
+            var response = await _httpClient.PostAsync("predictions", content);
             if (!response.IsSuccessStatusCode)
             {
                 return BaseResponse<UseModelResponseDto>.Fail(ErrorCode.GeneratePhotoFail);
@@ -54,7 +54,7 @@ namespace FotoGen.Infrastructure.Replicate
 
         public async Task<BaseResponse<bool>> GetModelAsync(string name)
         {
-            var url = $"/{_replicateSetting.Owner}/{name}";
+            var url = $"models/{_replicateSetting.Owner}/{name}";
             var response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
@@ -78,7 +78,7 @@ namespace FotoGen.Infrastructure.Replicate
 
         public async Task<BaseResponse<TrainModelResponseDto>> TrainModelAsync(TrainModelRequestDto request)
         {
-            var postUrl = $"/models/{_replicateSetting.Model}/versions/{_replicateSetting.Version}";
+            var postUrl = $"models/{_replicateSetting.Model}/versions/{_replicateSetting.Version}/trainings";
             var requestModel = TrainModelMapper.ToRequest(request, _replicateSetting);
             var json = JsonSerializer.Serialize(requestModel);
             var content = new StringContent(json, Encoding.UTF8, "application/json");

@@ -23,8 +23,8 @@ namespace FotoGen.Application.UseCases.GeneratePhoto
                 {
                     return BaseResponse<GeneratePhotoResponse>.Fail(ErrorCode.ImageGenerationResponseEmpty);
                 }
-                var resultData = BinaryData.FromBytes(bytesImage);
-                var result = new GeneratePhotoResponse { Data = resultData, OutputFormat = replicateReponse.Data.OutputFormat };
+                var base64Image = Convert.ToBase64String(bytesImage);
+                var result = new GeneratePhotoResponse { Base64Image = base64Image, OutputFormat = replicateReponse.Data.OutputFormat };
                 return BaseResponse<GeneratePhotoResponse>.Success(result);
             }
             return BaseResponse<GeneratePhotoResponse>.Fail(ErrorCode.GeneratePhotoFail);

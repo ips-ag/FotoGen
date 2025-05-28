@@ -1,7 +1,11 @@
 using System.Net;
 using System.Net.Http.Headers;
 using FotoGen.Application.Interfaces;
+using FotoGen.Domain.Interfaces;
+using FotoGen.Infrastructure.BackgroundServices;
+using FotoGen.Infrastructure.Email;
 using FotoGen.Infrastructure.Replicate;
+using FotoGen.Infrastructure.Repositories;
 using FotoGen.Infrastructure.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +17,15 @@ namespace FotoGen.Infrastructure
     {
         public static void AddInfrastructureDI(this IServiceCollection services, IConfiguration configuration)
         {
+            services.AddScoped<IReplicateService, ReplicateService>();
             services.Configure<ReplicateSetting>(configuration.GetSection(ReplicateSetting.Section));
+            services.Configure<ModelTrainingSettings>(configuration.GetSection(ModelTrainingSettings.Section));
+            services.AddScoped<ITrainedModelRepository>(provider =>
+            {
+                var options = provider.GetRequiredService<IOptions<ModelTrainingSettings>>().Value;
+                return new TrainedModelRepository(options.CsvFilePath);
+            });
+            services.AddScoped<IEmailService, EmailService>();
             services.AddHttpClient<IReplicateService, ReplicateService>((sp, client) =>
             {
                 var settings = sp.GetRequiredService<IOptions<ReplicateSetting>>().Value;
@@ -28,6 +40,8 @@ namespace FotoGen.Infrastructure
                     AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
                     AllowAutoRedirect = true
                 });
+            services.AddHostedService<ModelTrainingBackgroundService>();
+
         }
     }
 }
