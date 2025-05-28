@@ -39,7 +39,7 @@ public class ModelTrainingBackgroundService : BackgroundService
                 var modelRepository = scope.ServiceProvider.GetRequiredService<ITrainedModelRepository>();
                 var replicateClient = scope.ServiceProvider.GetRequiredService<IReplicateService>();
                 var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-                var modelsInTraining = await modelRepository.GetByStatusAsync(TrainModelStatus.Starting);
+                var modelsInTraining = await modelRepository.GetByStatusAsync(TrainModelStatus.InProgress);
 
                 if (modelsInTraining.Count == 0)
                 {
