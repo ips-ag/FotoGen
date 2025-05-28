@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FotoGen.Application", "FotoGen.Application\FotoGen.Application.csproj", "{C0211D38-EB5B-4699-9911-1924EE8631D9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FotoGen.Application", "api\FotoGen.Application\FotoGen.Application.csproj", "{C0211D38-EB5B-4699-9911-1924EE8631D9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FotoGen.Domain", "FotoGen.Domain\FotoGen.Domain.csproj", "{8F1AB18F-D282-4469-AABA-2AAF878129B7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FotoGen.Domain", "api\FotoGen.Domain\FotoGen.Domain.csproj", "{8F1AB18F-D282-4469-AABA-2AAF878129B7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FotoGen.Infrastructure", "FotoGen.Infrastructure\FotoGen.Infrastructure.csproj", "{8D182E17-0CDE-40EF-B0DD-3E542F61124C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FotoGen.Infrastructure", "api\FotoGen.Infrastructure\FotoGen.Infrastructure.csproj", "{8D182E17-0CDE-40EF-B0DD-3E542F61124C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FotoGen.Api", "FotoGen.Api\FotoGen.Api.csproj", "{AB2848A1-34E1-5EA0-8233-9AA54EEEBCF1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FotoGen.Api", "api\FotoGen.Api\FotoGen.Api.csproj", "{AB2848A1-34E1-5EA0-8233-9AA54EEEBCF1}"
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "app", "app\app.esproj", "{D64BBA4B-6318-41A0-896C-74917A86E362}"
 EndProject
