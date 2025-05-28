@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace FotoGen.Infrastructure.Replicate.UseModel
 {
-    public class UseModelResponse
+    public class UseModelResponseModel
     {
         [JsonPropertyName("id")]
         public string Id { get; set; }

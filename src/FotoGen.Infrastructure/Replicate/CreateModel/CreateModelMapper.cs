@@ -1,11 +1,11 @@
-using FotoGen.Common.Contracts.Replicated.CreateModel;
+using FotoGen.Domain.Entities.Models;
 using FotoGen.Infrastructure.Settings;
 
 namespace FotoGen.Infrastructure.Replicate.CreateModel
 {
     public static class CreateModelMapper
     {
-        public static CreateModelInput ToRequest(CreateReplicateModelRequestDto dto, ReplicateSetting settings)
+        public static CreateModelInput ToRequest(CreateModelRequest dto, ReplicateSetting settings)
         {
             return new CreateModelInput
             {

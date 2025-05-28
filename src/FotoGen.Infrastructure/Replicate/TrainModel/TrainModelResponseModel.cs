@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace FotoGen.Infrastructure.Replicate.TrainModel
 {
-    public class TrainModelResponse
+    public class TrainModelResponseModel
     {
         [JsonPropertyName("id")]
         public string Id { get; set; } = default!;

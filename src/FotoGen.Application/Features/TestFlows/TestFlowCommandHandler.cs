@@ -1,5 +1,5 @@
 using FluentValidation;
-using FotoGen.Common;
+using FotoGen.Domain.Entities.Response;
 using MediatR;
 
 namespace FotoGen.Application.Features.TestFlows

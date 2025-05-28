@@ -1,18 +1,11 @@
-using FotoGen.Common.Contracts.Replicated.GetTrainedModelStatus;
+using FotoGen.Domain.Entities.Models;
 
-namespace FotoGen.Infrastructure.Replicate.GetTrainModelStatus
+namespace FotoGen.Infrastructure.Replicate.GetTrainModelStatus;
+
+public class GetTrainModelStatusMapper
 {
-    public class GetTrainModelStatusMapper
+    public static QueryModelTrainingStatus ToResponseDto(GetTrainModelStatusResponse response)
     {
-        public static GetTrainedModelStatusResponseDto ToResponseDto(GetTrainModelStatusResponse response)
-        {
-            return new GetTrainedModelStatusResponseDto
-            {
-                Id = response.Id,
-                Status = response.Status,
-                Model = response.Model,
-                Version = response.Version,
-            };
-        }
+        return new QueryModelTrainingStatus(response.Id, response.Status, response.Model, response.Version);
     }
 }

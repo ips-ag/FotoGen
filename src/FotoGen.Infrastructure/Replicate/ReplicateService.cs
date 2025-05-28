@@ -1,17 +1,16 @@
 using System.Text;
 using System.Text.Json;
 using FotoGen.Application.Interfaces;
-using FotoGen.Common;
-using FotoGen.Common.Contracts.Replicated.CreateModel;
-using FotoGen.Common.Contracts.Replicated.GetTrainedModelStatus;
-using FotoGen.Common.Contracts.Replicated.TrainModel;
-using FotoGen.Common.Contracts.Replicated.UseModel;
+using FotoGen.Domain.Entities.Images;
+using FotoGen.Domain.Entities.Models;
+using FotoGen.Domain.Entities.Response;
 using FotoGen.Infrastructure.Replicate.CreateModel;
 using FotoGen.Infrastructure.Replicate.GetTrainModelStatus;
 using FotoGen.Infrastructure.Replicate.TrainModel;
 using FotoGen.Infrastructure.Replicate.UseModel;
 using FotoGen.Infrastructure.Settings;
 using Microsoft.Extensions.Options;
+using TrainModelResponse = FotoGen.Domain.Entities.Models.TrainModelResponse;
 
 namespace FotoGen.Infrastructure.Replicate
 {
@@ -24,7 +23,7 @@ namespace FotoGen.Infrastructure.Replicate
             _replicateSetting = replicateSetting.Value;
             _httpClient = httpClient;
         }
-        public async Task<BaseResponse<bool>> CreateReplicateModelAsync(CreateReplicateModelRequestDto dto)
+        public async Task<BaseResponse<bool>> CreateReplicateModelAsync(CreateModelRequest dto)
         {
             var requestModel = CreateModelMapper.ToRequest(dto, _replicateSetting);
             var json = JsonSerializer.Serialize(requestModel);
@@ -37,19 +36,19 @@ namespace FotoGen.Infrastructure.Replicate
             return BaseResponse<bool>.Success(true);
         }
 
-        public async Task<BaseResponse<UseModelResponseDto>> GeneratePhotoAsync(string prompt, string modelName)
+        public async Task<BaseResponse<GenerateImageResponse>> GeneratePhotoAsync(string prompt, string modelName)
         {
-            var input = UseModelMapper.ToInput(prompt, modelName, _replicateSetting);
+            var input = UseModelMapper.ToModel(prompt, modelName, _replicateSetting);
             var json = JsonSerializer.Serialize(input);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync("predictions", content);
             if (!response.IsSuccessStatusCode)
             {
-                return BaseResponse<UseModelResponseDto>.Fail(ErrorCode.GeneratePhotoFail);
+                return BaseResponse<GenerateImageResponse>.Fail(ErrorCode.GeneratePhotoFail);
             }
             var contentResponse = await response.Content.ReadAsStringAsync();
-            var useModelResponse = JsonSerializer.Deserialize<UseModelResponse>(contentResponse);
-            return BaseResponse<UseModelResponseDto>.Success(UseModelMapper.ToResponseDto(useModelResponse));
+            var responseModel = JsonSerializer.Deserialize<UseModelResponseModel>(contentResponse);
+            return BaseResponse<GenerateImageResponse>.Success(UseModelMapper.ToDomain(responseModel));
         }
 
         public async Task<BaseResponse<bool>> GetModelAsync(string name)
@@ -63,20 +62,20 @@ namespace FotoGen.Infrastructure.Replicate
             return BaseResponse<bool>.Success(true);
         }
 
-        public async Task<BaseResponse<GetTrainedModelStatusResponseDto>> GetTrainModelStatusAsync(string trainModelId)
+        public async Task<BaseResponse<QueryModelTrainingStatus>> GetTrainModelStatusAsync(string trainModelId)
         {
             var getUrl = $"trainings/{trainModelId}";
             var response = await _httpClient.GetAsync(getUrl);
             if (!response.IsSuccessStatusCode)
             {
-                return BaseResponse<GetTrainedModelStatusResponseDto>.Fail(ErrorCode.GetReplicateTrainModelFail);
+                return BaseResponse<QueryModelTrainingStatus>.Fail(ErrorCode.GetReplicateTrainModelFail);
             }
             var contentResponse = await response.Content.ReadAsStringAsync();
             var getTrainModelResponse = JsonSerializer.Deserialize<GetTrainModelStatusResponse>(contentResponse);
-            return BaseResponse<GetTrainedModelStatusResponseDto>.Success(GetTrainModelStatusMapper.ToResponseDto(getTrainModelResponse));
+            return BaseResponse<QueryModelTrainingStatus>.Success(GetTrainModelStatusMapper.ToResponseDto(getTrainModelResponse));
         }
 
-        public async Task<BaseResponse<TrainModelResponseDto>> TrainModelAsync(TrainModelRequestDto request)
+        public async Task<BaseResponse<TrainModelResponse>> TrainModelAsync(TrainModelRequest request)
         {
             var postUrl = $"models/{_replicateSetting.Model}/versions/{_replicateSetting.Version}/trainings";
             var requestModel = TrainModelMapper.ToRequest(request, _replicateSetting);
@@ -85,11 +84,11 @@ namespace FotoGen.Infrastructure.Replicate
             var response = await _httpClient.PostAsync(postUrl, content);
             if (!response.IsSuccessStatusCode)
             {
-                return BaseResponse<TrainModelResponseDto>.Fail(ErrorCode.CreateReplicateModelFail);
+                return BaseResponse<TrainModelResponse>.Fail(ErrorCode.CreateReplicateModelFail);
             }
             var contentResponse = await response.Content.ReadAsStringAsync();
-            var trainModelResponse = JsonSerializer.Deserialize<TrainModelResponse>(contentResponse);
-            return BaseResponse<TrainModelResponseDto>.Success(TrainModelMapper.ToResponseDto(trainModelResponse));
+            var trainModelResponse = JsonSerializer.Deserialize<TrainModel.TrainModelResponseModel>(contentResponse);
+            return BaseResponse<TrainModelResponse>.Success(TrainModelMapper.ToResponseDto(trainModelResponse));
         }
     }
 }
