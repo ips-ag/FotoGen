@@ -20,10 +20,13 @@ namespace FotoGen.Application.EventHandlers
 
         public async Task Handle(ModelTrainingSucceededEvent notification, CancellationToken cancellationToken)
         {
+            var link = "";
+            //TODO: Need to make a link here
             _logger.LogInformation($"Model training completed: {notification.Id}");
             await _emailService.SendTrainingCompletedEmailAsync(
                 notification.UserEmail,
-                notification.Model);
+                notification.Model,
+                link);
         }
     }
 

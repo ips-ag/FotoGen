@@ -14,9 +14,9 @@ namespace FotoGen.Infrastructure.Email
             _settings = settings.Value;
             _logger = logger;
         }
-        public async Task SendTrainingCompletedEmailAsync(string email, string modelName)
+        public async Task SendTrainingCompletedEmailAsync(string email, string modelName, string link)
         {
-            Console.WriteLine($"Email has sent to {email} for model {modelName}");
+            Console.WriteLine($"Email has sent to {email} for model {modelName} with {link}");
             await Task.CompletedTask;
         }
 

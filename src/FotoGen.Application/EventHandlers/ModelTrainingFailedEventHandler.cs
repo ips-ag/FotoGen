@@ -21,8 +21,6 @@ namespace FotoGen.Application.EventHandlers
         public async Task Handle(ModelTrainingFailedEvent notification, CancellationToken cancellationToken)
         {
             _logger.LogError($"Model training failed: {notification.Model}. Error: {notification.Error}");
-            //TODO: need to send a link for user can open application
-            var link = "";
             await _emailService.SendTrainingFailedEmailAsync(
                 notification.UserEmail,
                 notification.Model,
