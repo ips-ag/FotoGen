@@ -1,4 +1,4 @@
-namespace FotoGen.Domain.Entities.Models
+namespace FotoGen.Domain.Entities.Emails
 {
     public record EmailTemplate
     {

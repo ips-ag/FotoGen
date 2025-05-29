@@ -1,7 +1,7 @@
 using Azure;
 using Azure.Communication.Email;
 using FotoGen.Application.Interfaces;
-using FotoGen.Domain.Entities.Models;
+using FotoGen.Domain.Entities.Emails;
 using FotoGen.Infrastructure.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -26,19 +26,18 @@ namespace FotoGen.Infrastructure.Email
 
         public async Task SendTrainingCompletedEmailAsync(string email, string modelName, string link)
         {
-            var template = TrainingEmailTemplates.GetTrainingCompletedTemplate(modelName, link);
+            var template = EmailTemplates.GetTrainingCompletedTemplate(modelName, link);
             await SendEmailAsync(email, template);
         }
 
         public async Task SendTrainingFailedEmailAsync(string email, string modelName, string error)
         {
-            var template = TrainingEmailTemplates.GetTrainingFailedTemplate(modelName, error);
+            var template = EmailTemplates.GetTrainingFailedTemplate(modelName, error);
             await SendEmailAsync(email, template);
         }
 
         private async Task SendEmailAsync(string recipientEmail, EmailTemplate template)
         {
-            recipientEmail = "cuong.vietnguyen@ips-ag.com";
             try
             {
                 var emailContent = new EmailContent(template.Subject)

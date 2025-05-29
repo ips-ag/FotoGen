@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using FotoGen.Domain.Entities.Models;
 
-namespace FotoGen.Infrastructure.Email
+namespace FotoGen.Domain.Entities.Emails
 {
-    public static class TrainingEmailTemplates
+    public static class EmailTemplates
     {
         public static EmailTemplate GetTrainingCompletedTemplate(string modelName, string link)
         {
