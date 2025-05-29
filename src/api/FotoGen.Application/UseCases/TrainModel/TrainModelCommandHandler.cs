@@ -1,3 +1,4 @@
+using FluentValidation;
 using FotoGen.Application.Helpers;
 using FotoGen.Application.Interfaces;
 using FotoGen.Domain.Entities;
@@ -13,17 +14,27 @@ public class TrainModelCommandHandler : IRequestHandler<TrainModelCommand, BaseR
 {
     private readonly IReplicateService _replicateService;
     private readonly ITrainedModelRepository _trainedModelRepository;
+    private readonly IValidator<TrainModelCommand> _validator;
 
-    public TrainModelCommandHandler(IReplicateService replicateService, ITrainedModelRepository trainedModelRepository)
+    public TrainModelCommandHandler(
+        IReplicateService replicateService, 
+        ITrainedModelRepository trainedModelRepository, 
+        IValidator<TrainModelCommand> validator)
     {
         _replicateService = replicateService;
         _trainedModelRepository = trainedModelRepository;
+        _validator = validator;
     }
 
     public async Task<BaseResponse<TrainModelResponse>> Handle(
         TrainModelCommand request,
         CancellationToken cancellationToken)
     {
+        var validationResult = await _validator.ValidateAsync(request);
+        if (!validationResult.IsValid)
+        {
+            return BaseResponse<TrainModelResponse>.Fail(validationResult.ToDictionary());
+        }
         var isModelExisted = await _replicateService.GetModelAsync(request.ModelName);
         if (!isModelExisted.IsSuccess)
         {
