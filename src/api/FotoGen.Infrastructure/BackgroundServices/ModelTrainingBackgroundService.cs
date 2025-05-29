@@ -1,6 +1,5 @@
 using FotoGen.Application.Events;
 using FotoGen.Application.Interfaces;
-using FotoGen.Domain.Events;
 using FotoGen.Domain.Interfaces;
 using FotoGen.Domain.ValueObjects;
 using MediatR;
@@ -12,7 +11,7 @@ namespace FotoGen.Infrastructure.BackgroundServices;
 
 public class ModelTrainingBackgroundService : BackgroundService
 {
-    private const int MaxConsecutiveErrors = 0;
+    private const int MaxConsecutiveErrors = 5;
     private readonly ILogger<ModelTrainingBackgroundService> _logger;
     private readonly IServiceProvider _serviceProvider;
     private readonly TimeSpan _checkInterval = TimeSpan.FromMinutes(5);
