@@ -1,9 +1,9 @@
 using System.Text.Json.Serialization;
 using FotoGen.Infrastructure.Replicate.TrainModel;
 
-namespace FotoGen.Infrastructure.Replicate.GetTrainModelStatus
+namespace FotoGen.Infrastructure.Replicate.GetTrainedModelStatus
 {
-    public class GetTrainModelStatusResponse
+    public class GetTrainedModelStatusResponse
     {
         [JsonPropertyName("id")]
         public string Id { get; set; } = default!;

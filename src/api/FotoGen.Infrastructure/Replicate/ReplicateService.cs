@@ -5,7 +5,7 @@ using FotoGen.Domain.Entities.Images;
 using FotoGen.Domain.Entities.Models;
 using FotoGen.Domain.Entities.Response;
 using FotoGen.Infrastructure.Replicate.CreateModel;
-using FotoGen.Infrastructure.Replicate.GetTrainModelStatus;
+using FotoGen.Infrastructure.Replicate.GetTrainedModelStatus;
 using FotoGen.Infrastructure.Replicate.TrainModel;
 using FotoGen.Infrastructure.Replicate.UseModel;
 using FotoGen.Infrastructure.Settings;
@@ -71,8 +71,8 @@ namespace FotoGen.Infrastructure.Replicate
                 return BaseResponse<QueryModelTrainingStatus>.Fail(ErrorCode.GetReplicateTrainModelFail);
             }
             var contentResponse = await response.Content.ReadAsStringAsync();
-            var getTrainModelResponse = JsonSerializer.Deserialize<GetTrainModelStatusResponse>(contentResponse);
-            return BaseResponse<QueryModelTrainingStatus>.Success(GetTrainModelStatusMapper.ToResponseDto(getTrainModelResponse));
+            var getTrainModelResponse = JsonSerializer.Deserialize<GetTrainedModelStatusResponse>(contentResponse);
+            return BaseResponse<QueryModelTrainingStatus>.Success(GetTrainedModelStatusMapper.ToResponseDto(getTrainModelResponse));
         }
 
         public async Task<BaseResponse<TrainModelResponse>> TrainModelAsync(TrainModelRequest request)
