@@ -1,7 +1,7 @@
 using FotoGen.Domain.Entities.Response;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FotoGen.Externsions;
+namespace FotoGen.Extensions;
 
 public static class BaseResponseExtensions
 {

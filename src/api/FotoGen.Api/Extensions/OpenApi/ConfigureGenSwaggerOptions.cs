@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning.ApiExplorer;
+using FotoGen.Extensions.OpenApi.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Options;
@@ -6,7 +7,7 @@ using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace FotoGen.Externsions.OpenApi;
+namespace FotoGen.Extensions.OpenApi;
 
 // https://raw.githubusercontent.com/microsoft/aspnet-api-versioning/master/samples/aspnetcore/SwaggerSample/ConfigureSwaggerOptions.cs
 /// <summary>
@@ -16,20 +17,25 @@ namespace FotoGen.Externsions.OpenApi;
 ///     This allows API versioning to define a Swagger document per API version after the
 ///     <see cref="IApiVersionDescriptionProvider" /> service has been resolved from the service container.
 /// </remarks>
-public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
+internal class ConfigureGenSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
 {
     private readonly IApiVersionDescriptionProvider _provider;
+    private readonly IOptionsMonitor<SwaggerConfiguration> _options;
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="ConfigureSwaggerOptions" /> class.
+    ///     Initializes a new instance of the <see cref="ConfigureGenSwaggerOptions" /> class.
     /// </summary>
     /// <param name="provider">
     ///     The <see cref="IApiVersionDescriptionProvider">provider</see> used to generate Swagger
     ///     documents.
     /// </param>
-    public ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider)
+    /// <param name="options"></param>
+    public ConfigureGenSwaggerOptions(
+        IApiVersionDescriptionProvider provider,
+        IOptionsMonitor<SwaggerConfiguration> options)
     {
         _provider = provider;
+        _options = options;
     }
 
     /// <inheritdoc />
@@ -42,6 +48,14 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
             options.SwaggerDoc(description.GroupName, CreateInfoForApiVersion(description));
         }
 
+        options.CustomSchemaIds(type => type.FullName);
+        options.MapType<TimeSpan?>(() => new OpenApiSchema { Type = "string", Format = "string" });
+        options.SupportNonNullableReferenceTypes();
+        options.SchemaFilter<EnumSchemaFilter>();
+        options.ParameterFilter<EnumParameterFilter>();
+
+        var settings = _options.CurrentValue.Authentication;
+        if (settings?.AuthorizationUrl is null || settings.TokenUrl is null) return;
         options.OperationFilter<AuthorizeCheckOperationFilter>();
         options.AddSecurityDefinition(
             "oauth2",
@@ -52,22 +66,12 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
                 {
                     Implicit = new OpenApiOAuthFlow
                     {
-                        AuthorizationUrl =
-                            new Uri(
-                                "https://login.microsoftonline.com/dcb58767-2d57-462f-82d5-552df1c47ccb/connect/authorize"),
-                        Scopes = new Dictionary<string, string>
-                        {
-                            ["User.Read"] = "User.Read", ["FotoGen"] = "FotoGen"
-                        }
+                        AuthorizationUrl = settings.AuthorizationUrl,
+                        TokenUrl = settings.TokenUrl,
+                        Scopes = settings.Scopes?.ToDictionary(kvp => kvp.Name, kvp => kvp.Description)
                     }
                 }
             });
-
-        options.CustomSchemaIds(type => type.FullName);
-        options.MapType<TimeSpan?>(() => new OpenApiSchema { Type = "string", Format = "string" });
-        options.SupportNonNullableReferenceTypes();
-        options.SchemaFilter<EnumSchemaFilter>();
-        options.ParameterFilter<EnumParameterFilter>();
     }
 
     private static OpenApiInfo CreateInfoForApiVersion(ApiVersionDescription description)
@@ -99,9 +103,9 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
             }
             if (authorizeAttributes.Count > 0)
             {
-                //operation.Responses.Add("401", new Response { Description = "Unauthorized" });
-                //operation.Responses.Add("403", new Response { Description = "Forbidden" });
-                var scopes = new[] { "User.Read FotoGen" };
+                operation.Responses.Add("401", new OpenApiResponse { Description = "Unauthorized" });
+                operation.Responses.Add("403", new OpenApiResponse { Description = "Forbidden" });
+                var scopes = new[] { "FotoGen" };
                 var oAuthScheme = new OpenApiSecurityScheme
                 {
                     Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "oauth2" }

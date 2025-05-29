@@ -1,2 +1,0 @@
-Id,ModelName,UserEmail,ImageUrl,TriggerWord,Status,CreatedAt,SuccessedAt,CanceledUrl
-pn135pdjqxrma0cq3brs671etw,e8f678ce-1087-4411-a887-6fa6622e1a42,abc@gmail.com,https://fotogen.blob.core.windows.net/train/train-model.zip,e,Failed,2025-05-29T07:28:57.2415655Z,,https://api.replicate.com/v1/predictions/pn135pdjqxrma0cq3brs671etw/cancel

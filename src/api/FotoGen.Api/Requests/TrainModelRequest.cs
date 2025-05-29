@@ -1,7 +1,10 @@
-namespace FotoGen.Requests
+using System.Text.Json.Serialization;
+
+namespace FotoGen.Requests;
+
+public class TrainModelRequest
 {
-    public class TrainModelRequest
-    {
-        public string ImageUrl { get; set; }
-    }
+    [JsonPropertyName("imageUrl")]
+    [JsonRequired]
+    public required string ImageUrl { get; set; }
 }

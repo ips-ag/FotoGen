@@ -1,8 +1,13 @@
-namespace FotoGen.Requests
+using System.Text.Json.Serialization;
+
+namespace FotoGen.Requests;
+
+public class GeneratePhotoRequest
 {
-    public class GeneratePhotoRequest
-    {
-        public string? ModelName { get; set; }
-        public string? Prompt {  get; set; }
-    }
+    [JsonPropertyName("modelName")]
+    public string? ModelName { get; set; }
+
+    [JsonPropertyName("prompt")]
+    [JsonRequired]
+    public required string Prompt { get; set; }
 }

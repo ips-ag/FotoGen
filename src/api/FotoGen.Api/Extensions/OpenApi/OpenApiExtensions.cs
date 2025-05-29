@@ -1,14 +1,14 @@
 ﻿using Asp.Versioning;
+using FotoGen.Extensions.OpenApi.Configuration;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace FotoGen.Externsions.OpenApi;
+namespace FotoGen.Extensions.OpenApi;
 
 public static class OpenApiExtensions
 {
     public static void AddCustomApiVersioning(this IServiceCollection services)
     {
-        // services.AddEndpointsApiExplorer();
         services.AddApiVersioning(o =>
         {
             o.ApiVersionReader = new UrlSegmentApiVersionReader();
@@ -23,8 +23,12 @@ public static class OpenApiExtensions
 
     public static void AddSwaggerGenRespectingCustomApiVersioning(this IServiceCollection services)
     {
-        services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
-        services.AddSwaggerGen();
+        services.AddOptions<SwaggerConfiguration>()
+            .BindConfiguration(SwaggerConfiguration.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureGenSwaggerOptions>();
+        services.AddSwaggerGen(options => options.OperationFilter<SwaggerDefaultValues>());
         services.AddSwaggerGenNewtonsoftSupport();
     }
 }

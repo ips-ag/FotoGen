@@ -1,7 +1,10 @@
-using Asp.Versioning.ApiExplorer;
 using FotoGen.Application;
-using FotoGen.Externsions.OpenApi;
+using FotoGen.Extensions.OpenApi;
+using FotoGen.Extensions.OpenApi.Configuration;
+using FotoGen.Extensions.Security;
+using FotoGen.Extensions.Security.Configuration;
 using FotoGen.Infrastructure;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using Microsoft.OpenApi.Models;
 
@@ -10,15 +13,15 @@ builder.Configuration.AddJsonFile("secrets.json", optional: true, reloadOnChange
 builder.Services.AddControllers();
 builder.Services.AddApplicationDI();
 builder.Services.AddInfrastructureDI(builder.Configuration);
-builder.Services.AddOpenApi();
 builder.Services.AddCustomApiVersioning();
 builder.Services.AddSwaggerGenRespectingCustomApiVersioning();
+builder.Services.ConfigureAuthentication();
+builder.Services.ConfigureAuthorization();
 
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
     app.UseSwagger(setup =>
     {
         setup.OpenApiVersion = OpenApiSpecVersion.OpenApi3_0;
@@ -27,16 +30,14 @@ if (app.Environment.IsDevelopment())
         {
             swaggerDoc.Servers =
             [
-                new OpenApiServer {
-                    Url = $"{httpReq.Scheme}://{httpReq.Host.Value}",
-                    Description = "Default"
-                }
+                new OpenApiServer { Url = $"{httpReq.Scheme}://{httpReq.Host.Value}", Description = "Default" }
             ];
         });
     });
     app.UseSwaggerUI(options =>
     {
-        options.OAuthClientId("76f75887-be52-49c6-882d-200da320be23");
+        var settings = app.Services.GetRequiredService<IOptions<SwaggerConfiguration>>().Value;
+        options.OAuthClientId(settings.Authentication?.ClientId);
         var descriptions = app.DescribeApiVersions();
         foreach (var description in descriptions.OrderByDescending(x => x.ApiVersion))
         {
@@ -45,6 +46,9 @@ if (app.Environment.IsDevelopment())
         }
     });
 }
+
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
-app.UseExceptionHandler("/errors");
+app.UseExceptionHandler("/api/errors");
 app.Run();
