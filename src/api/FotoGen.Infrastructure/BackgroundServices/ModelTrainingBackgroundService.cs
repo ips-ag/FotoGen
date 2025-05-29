@@ -87,9 +87,6 @@ public class ModelTrainingBackgroundService : BackgroundService
                         trainedModel.SuccessedAt = newStatus == TrainModelStatus.Succeeded ? DateTime.UtcNow : null;
                         await modelRepository.UpdateAsync(trainedModel);
 
-                        //TODO how to get user's email
-                        var userEmail = "user@example.com";
-
                         if (newStatus == TrainModelStatus.Succeeded)
                         {
                             await mediator.Publish(
@@ -97,7 +94,7 @@ public class ModelTrainingBackgroundService : BackgroundService
                                     trainedModelResult.Id,
                                     trainedModelResult.Model,
                                     trainedModelResult.Version,
-                                    userEmail),
+                                    trainedModel.UserEmail),
                                 stoppingToken);
                         }
                         else if (newStatus == TrainModelStatus.Failed)
@@ -107,9 +104,9 @@ public class ModelTrainingBackgroundService : BackgroundService
                                     trainedModelResult.Id,
                                     trainedModelResult.Model,
                                     trainedModelResult.Version,
-                                    userEmail,
+                                    trainedModel.UserEmail,
                                     statusResult.ErrorCode ??
-                                    "Training failed - check Replicate dashboard for details"),
+                                    "Training failed"),
                                 stoppingToken);
                         }
 
