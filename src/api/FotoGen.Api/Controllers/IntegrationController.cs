@@ -40,7 +40,7 @@ public class IntegrationController : ControllerBase
 
     [HttpGet("check-user-model-available")]
     [ProducesResponseType<bool>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> CheckUserModelAvailableAsync(string modelName, CancellationToken cancel)
+    public async Task<IActionResult> CheckUserModelAvailableAsync(string? modelName, CancellationToken cancel)
     {
         if (string.IsNullOrEmpty(modelName)) modelName = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var query = new CheckUserModelAvailableQuery { ModelName = modelName };

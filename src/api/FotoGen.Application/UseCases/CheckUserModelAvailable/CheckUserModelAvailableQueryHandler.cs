@@ -28,7 +28,7 @@ namespace FotoGen.Application.UseCases.CheckUserModelAvailable
             {
                 return BaseResponse<bool>.Success(true);
             }
-            return BaseResponse<bool>.Fail(ErrorCode.GetReplicateModelFail);
+            return BaseResponse<bool>.Fail(response.ErrorCode.Value);
         }
     }
 }
