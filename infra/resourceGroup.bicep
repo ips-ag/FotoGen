@@ -121,6 +121,16 @@ module storageAccount 'storageAccount.bicep' = {
   }
 }
 
+module communicationServices 'communicationServices.bicep' = {
+  name: 'communicationServices'
+  params: {
+    projectName: projectName
+    env: env
+    tags: tags
+    keyVaultName: keyVault.name
+  }
+}
+
 resource appServicePlan 'Microsoft.Web/serverfarms@2024-04-01' = {
   name: appServicePlanName
   location: location
@@ -186,6 +196,20 @@ resource apiWebAppConfig 'Microsoft.Web/sites/config@2024-04-01' = {
         name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
         value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=ApplicationInsights--ConnectionString)'
       }
+      {
+        name: 'EMAIL__CONNECTIONSTRING'
+        value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${communicationServices.outputs.connectionStringSecretName})'
+      }
+      {
+        name: 'EMAIL__SENDEREMAIL'
+        value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${communicationServices.outputs.senderEmailSecretName})'
+      }
     ]
   }
 }
+
+// Outputs
+output keyVaultName string = keyVault.name
+output keyVaultId string = keyVault.id
+output communicationServicesConnectionStringSecretName string = communicationServices.outputs.connectionStringSecretName
+output communicationServicesSenderEmailSecretName string = communicationServices.outputs.senderEmailSecretName
