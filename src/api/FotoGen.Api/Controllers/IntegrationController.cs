@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using FotoGen.Application.UseCases.GeneratePhoto;
 using FotoGen.Application.UseCases.GetUserAvailableModel;
 using FotoGen.Application.UseCases.TrainModel;
@@ -39,11 +40,10 @@ public class IntegrationController : ControllerBase
 
     [HttpGet("check-user-model-available")]
     [ProducesResponseType<bool>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> CheckUserModelAvailableAsync(CancellationToken cancel)
+    public async Task<IActionResult> CheckUserModelAvailableAsync(string modelName, CancellationToken cancel)
     {
-        //TODO: Get from jwt
-        var userId = "e8f678ce-1087-4411-a887-6fa6622e1a42";
-        var query = new CheckUserModelAvailableQuery { ModelName = userId };
+        if (string.IsNullOrEmpty(modelName)) modelName = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var query = new CheckUserModelAvailableQuery { ModelName = modelName };
         var result = await _mediator.Send(query, cancel);
         return result.ToActionResult();
     }
