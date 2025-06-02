@@ -43,8 +43,8 @@ param keyVaultName string = 'kv-${projectName}-${env}'
 @description('Optional. Indicates number fo days to retain deleted items (containers, blobs, snapshosts, versions). Default value is 7')
 param daysSoftDelete int = 7
 
-@description('Optional. Disable Key Vault deletion (enables purge protection). Default is false.')
-param disableKeyVaultDelete bool = false
+@description('Optional. Enable Key Vault purge protection. Default is false.')
+param enableKeyVaultPurgeProtection bool = false
 
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   name: logAnalyticsName
@@ -92,9 +92,9 @@ resource keyVault 'Microsoft.KeyVault/vaults@2024-11-01' = {
     }
     tenantId: subscription().tenantId
     enableRbacAuthorization: true
-    enableSoftDelete: disableKeyVaultDelete
-    enablePurgeProtection: disableKeyVaultDelete
-    softDeleteRetentionInDays: daysSoftDelete
+    enableSoftDelete: true
+    enablePurgeProtection: enableKeyVaultPurgeProtection ? true : null
+    softDeleteRetentionInDays: 10
     publicNetworkAccess: 'Enabled'
     networkAcls: {
       defaultAction: 'Allow'
@@ -177,7 +177,10 @@ resource keyVaultSecretsUserRoleAssignment 'Microsoft.Authorization/roleAssignme
   name: guid(keyVault.id, apiWebAppName, '4633458b-17de-408a-b874-0445c86b69e6')
   scope: keyVault
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6') // Key Vault Secrets User
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      '4633458b-17de-408a-b874-0445c86b69e6'
+    ) // Key Vault Secrets User
     principalId: apiWebApp.outputs.principalId
     principalType: 'ServicePrincipal'
   }
@@ -192,7 +195,7 @@ resource apiWebAppConfig 'Microsoft.Web/sites/config@2024-04-01' = {
       allowedOrigins: [uiWebApp.outputs.endpoint]
     }
     appSettings: [
-      { 
+      {
         name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
         value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=ApplicationInsights--ConnectionString)'
       }
