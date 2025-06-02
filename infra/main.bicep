@@ -37,8 +37,3 @@ module rg 'resourceGroup.bicep' = {
     tags: tags
   }
 }
-
-// Outputs
-output keyVaultName string = rg.outputs.keyVaultName
-output communicationServicesConnectionStringSecretName string = rg.outputs.communicationServicesConnectionStringSecretName
-output communicationServicesSenderEmailSecretName string = rg.outputs.communicationServicesSenderEmailSecretName

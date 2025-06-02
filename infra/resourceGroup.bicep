@@ -207,12 +207,22 @@ resource apiWebAppConfig 'Microsoft.Web/sites/config@2024-04-01' = {
         name: 'EMAIL__SENDEREMAIL'
         value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${communicationServices.outputs.senderEmailSecretName})'
       }
+      {
+        name: 'REPLICATE__TOKEN'
+        value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=Replicate--Token)'
+      }
+      {
+        name: 'REPLICATE__OWNER'
+        value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=Replicate--Owner)'
+      }
+      {
+        name: 'SECURITY__AUTHENTICATION__AUTHORITY'
+        value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=Authentication--Authority)'
+      }
+      {
+        name: 'SECURITY__AUTHENTICATION__AUDIENCE'
+        value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=Authentication--Audience)'
+      }
     ]
   }
 }
-
-// Outputs
-output keyVaultName string = keyVault.name
-output keyVaultId string = keyVault.id
-output communicationServicesConnectionStringSecretName string = communicationServices.outputs.connectionStringSecretName
-output communicationServicesSenderEmailSecretName string = communicationServices.outputs.senderEmailSecretName
