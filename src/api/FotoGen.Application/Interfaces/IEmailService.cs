@@ -8,7 +8,7 @@ namespace FotoGen.Application.Interfaces
 {
     public interface IEmailService
     {
-        Task SendTrainingCompletedEmailAsync(string email, string modelName, string link);
+        Task SendTrainingCompletedEmailAsync(string email, string modelName, string appLink, string sharedLink);
         Task SendTrainingFailedEmailAsync(string email, string modelName, string error);
     }
 }

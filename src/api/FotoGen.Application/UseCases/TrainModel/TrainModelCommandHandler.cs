@@ -60,6 +60,7 @@ public class TrainModelCommandHandler : IRequestHandler<TrainModelCommand, BaseR
             trainModelResult.Data.Id,
             request.ModelName,
             request.UserEmail,
+            request.UserName,
             request.InputImageUrl,
             triggerWord,
             TrainModelStatus.InProgress,

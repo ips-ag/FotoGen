@@ -6,6 +6,7 @@ namespace FotoGen.Domain.Entities
     {
         public string Id { get; set; } = default!;
         public string ModelName { get; set; } = default!;
+        public string UserName { get; set; } = default!;
         public string UserEmail { get; set; } = default!;
         public string ImageUrl { get; set; } = default!;
         public string TriggerWord { get; set; } = default!;
@@ -14,11 +15,12 @@ namespace FotoGen.Domain.Entities
         public DateTime? SuccessedAt {  get; set; }
         public string? CanceledUrl {  get; set; }
         public TrainModelEntity() { }
-        public TrainModelEntity(string id, string modelName, string userEmail, string imageUrl, string triggerWords, TrainModelStatus status, string? canceledUrl = null, DateTime? successedAt = null)
+        public TrainModelEntity(string id, string modelName, string userEmail, string userName, string imageUrl, string triggerWords, TrainModelStatus status, string? canceledUrl = null, DateTime? successedAt = null)
         {
             Id = id;
             ModelName = modelName;
             UserEmail = userEmail;
+            UserName = userName;
             ImageUrl = imageUrl;
             TriggerWord = triggerWords;
             Status = status;

@@ -13,7 +13,7 @@ builder.Configuration.AddJsonFile("secrets.json", optional: true, reloadOnChange
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserContext, UserContext>();
 builder.Services.AddControllers();
-builder.Services.AddApplicationDI();
+builder.Services.AddApplicationDI(builder.Configuration);
 builder.Services.AddInfrastructureDI(builder.Configuration);
 builder.Services.AddCustomApiVersioning();
 builder.Services.AddSwaggerGenRespectingCustomApiVersioning();

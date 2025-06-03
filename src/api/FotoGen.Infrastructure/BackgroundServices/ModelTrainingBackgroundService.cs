@@ -94,7 +94,9 @@ public class ModelTrainingBackgroundService : BackgroundService
                                     trainedModelResult.Id,
                                     trainedModelResult.Model,
                                     trainedModelResult.Version,
-                                    trainedModel.UserEmail),
+                                    trainedModel.UserEmail,
+                                    trainedModel.UserName,
+                                    trainedModel.ModelName),
                                 stoppingToken);
                         }
                         else if (newStatus == TrainModelStatus.Failed)

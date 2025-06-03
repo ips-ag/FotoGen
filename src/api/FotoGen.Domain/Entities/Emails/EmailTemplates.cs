@@ -1,27 +1,23 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace FotoGen.Domain.Entities.Emails
 {
     public static class EmailTemplates
     {
-        public static EmailTemplate GetTrainingCompletedTemplate(string modelName, string link)
+        public static EmailTemplate GetTrainingCompletedTemplate(string modelName, string appLink, string sharedLink)
         {
             return new EmailTemplate
             {
-                Subject = $"Training completed for model: {modelName}",
-                PlainText = $"Your model {modelName} has completed training.\n\n" +
-                            $"You can access it here: {link}\n\n" +
-                            $"Best regards,\nThe FotoGen Team",
+                Subject = $"Your model '{modelName}' is ready to use",
+                PlainText = $"Model training is completed.\n\n" +
+                           $"You can use it by going to the app: {appLink}\n\n" +
+                           $"Share it with others using this link: {sharedLink}\n\n" +
+                           $"Best regards,\nThe FotoGen Team",
                 Html = $@"
 <html>
 <body>
-    <h1>Training Completed</h1>
-    <p>Your model <strong>{modelName}</strong> has completed training.</p>
-    <p><a href='{link}'>Click here to access your model</a></p>
+    <h1>Model Training Completed</h1>
+    <p>Your model <strong>{modelName}</strong> is ready to use.</p>
+    <p><a href='{appLink}'>Click here to access the app</a></p>
+    <p>Share with others: <a href='{sharedLink}'>{sharedLink}</a></p>
     <p>Best regards,<br/>The FotoGen Team</p>
 </body>
 </html>"

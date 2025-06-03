@@ -24,9 +24,9 @@ namespace FotoGen.Infrastructure.Email
             _emailClient = emailClient;
         }
 
-        public async Task SendTrainingCompletedEmailAsync(string email, string modelName, string link)
+        public async Task SendTrainingCompletedEmailAsync(string email, string modelName,  string appLink, string sharedLink)
         {
-            var template = EmailTemplates.GetTrainingCompletedTemplate(modelName, link);
+            var template = EmailTemplates.GetTrainingCompletedTemplate(modelName, appLink, sharedLink);
             await SendEmailAsync(email, template);
         }
 
