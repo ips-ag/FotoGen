@@ -12,7 +12,8 @@ public class ErrorMessage
     { ErrorCode.GetReplicateTrainModelFail, "Failed to retrieve Replicate training model." },
     { ErrorCode.GetReplicateModelFail, "Failed to retrieve Replicate model." },
     { ErrorCode.TrainReplicateModelFail, "Failed to train Replicate model." },
-    { ErrorCode.ImageGenerationResponseEmpty, "Image generation returned an empty response." }
+    { ErrorCode.ImageGenerationResponseEmpty, "Image generation returned an empty response." },
+    { ErrorCode.ReplicateModelNotFound, "Model not found" }
 };
 
     public static string Get(ErrorCode code)

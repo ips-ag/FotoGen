@@ -11,17 +11,20 @@ public static class BaseResponseExtensions
 
         return response.ErrorCode switch
         {
-            nameof(ErrorCode.Validation) => new BadRequestObjectResult(response),
-            nameof(ErrorCode.UnauthorizedAccess) => new UnauthorizedObjectResult(response),
-            nameof(ErrorCode.Forbidden) => new ObjectResult(response) { StatusCode = StatusCodes.Status403Forbidden },
+            ErrorCode.Validation => new BadRequestObjectResult(response),
+            ErrorCode.UnauthorizedAccess => new UnauthorizedObjectResult(response),
+            ErrorCode.Forbidden => new ObjectResult(response) { StatusCode = StatusCodes.Status403Forbidden },
+
+            //Not found
+            ErrorCode.ReplicateModelNotFound => new ObjectResult(response) { StatusCode = StatusCodes.Status404NotFound },
 
             // Replicate-related errors (treated as 500 Internal Server Error)
-            nameof(ErrorCode.CreateReplicateModelFail) => new ObjectResult(response) { StatusCode = StatusCodes.Status500InternalServerError },
-            nameof(ErrorCode.GeneratePhotoFail) => new ObjectResult(response) { StatusCode = StatusCodes.Status500InternalServerError },
-            nameof(ErrorCode.GetReplicateTrainModelFail) => new ObjectResult(response) { StatusCode = StatusCodes.Status500InternalServerError },
-            nameof(ErrorCode.GetReplicateModelFail) => new ObjectResult(response) { StatusCode = StatusCodes.Status500InternalServerError },
-            nameof(ErrorCode.TrainReplicateModelFail) => new ObjectResult(response) { StatusCode = StatusCodes.Status500InternalServerError },
-            nameof(ErrorCode.ImageGenerationResponseEmpty) => new ObjectResult(response) { StatusCode = StatusCodes.Status500InternalServerError },
+            ErrorCode.CreateReplicateModelFail => new ObjectResult(response) { StatusCode = StatusCodes.Status500InternalServerError },
+            ErrorCode.GeneratePhotoFail => new ObjectResult(response) { StatusCode = StatusCodes.Status500InternalServerError },
+            ErrorCode.GetReplicateTrainModelFail => new ObjectResult(response) { StatusCode = StatusCodes.Status500InternalServerError },
+            ErrorCode.GetReplicateModelFail => new ObjectResult(response) { StatusCode = StatusCodes.Status500InternalServerError },
+            ErrorCode.TrainReplicateModelFail => new ObjectResult(response) { StatusCode = StatusCodes.Status500InternalServerError },
+            ErrorCode.ImageGenerationResponseEmpty => new ObjectResult(response) { StatusCode = StatusCodes.Status500InternalServerError },
 
             _ => new ObjectResult(response) { StatusCode = StatusCodes.Status500InternalServerError }
         };

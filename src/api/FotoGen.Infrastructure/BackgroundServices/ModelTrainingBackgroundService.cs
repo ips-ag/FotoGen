@@ -105,7 +105,7 @@ public class ModelTrainingBackgroundService : BackgroundService
                                     trainedModelResult.Model,
                                     trainedModelResult.Version,
                                     trainedModel.UserEmail,
-                                    statusResult.ErrorCode ??
+                                    statusResult.ErrorCode.ToString() ??
                                     "Training failed"),
                                 stoppingToken);
                         }

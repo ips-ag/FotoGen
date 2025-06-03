@@ -10,5 +10,6 @@ public enum ErrorCode
     GetReplicateTrainModelFail,
     GetReplicateModelFail,
     TrainReplicateModelFail,
-    ImageGenerationResponseEmpty
+    ImageGenerationResponseEmpty,
+    ReplicateModelNotFound
 }
