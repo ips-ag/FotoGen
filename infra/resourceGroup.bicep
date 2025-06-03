@@ -37,8 +37,14 @@ param apiWebAppName string = 'app-${projectName}-api-${env}'
 @description('Optional. The name of the Storage Account to create.')
 param storageAccountName string = 'sto${projectName}${env}'
 
+@description('Optional. The name of the Key Vault to create.')
+param keyVaultName string = 'kv-${projectName}-${env}'
+
 @description('Optional. Indicates number fo days to retain deleted items (containers, blobs, snapshosts, versions). Default value is 7')
 param daysSoftDelete int = 7
+
+@description('Optional. Enable Key Vault purge protection. Default is false.')
+param enableKeyVaultPurgeProtection bool = false
 
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   name: logAnalyticsName
@@ -75,6 +81,36 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
+resource keyVault 'Microsoft.KeyVault/vaults@2024-11-01' = {
+  name: keyVaultName
+  location: location
+  tags: tags
+  properties: {
+    sku: {
+      family: 'A'
+      name: 'standard'
+    }
+    tenantId: subscription().tenantId
+    enableRbacAuthorization: true
+    enableSoftDelete: true
+    enablePurgeProtection: enableKeyVaultPurgeProtection ? true : null
+    softDeleteRetentionInDays: 10
+    publicNetworkAccess: 'Enabled'
+    networkAcls: {
+      defaultAction: 'Allow'
+      bypass: 'AzureServices'
+    }
+  }
+}
+
+resource _ 'Microsoft.KeyVault/vaults/secrets@2024-11-01' = {
+  parent: keyVault
+  name: 'ApplicationInsights--ConnectionString'
+  properties: {
+    value: appInsights.properties.ConnectionString
+  }
+}
+
 module storageAccount 'storageAccount.bicep' = {
   name: storageAccountName
   params: {
@@ -82,6 +118,16 @@ module storageAccount 'storageAccount.bicep' = {
     location: location
     tags: tags
     daysSoftDelete: daysSoftDelete
+  }
+}
+
+module communicationServices 'communicationServices.bicep' = {
+  name: 'communicationServices'
+  params: {
+    projectName: projectName
+    env: env
+    tags: tags
+    keyVaultName: keyVault.name
   }
 }
 
@@ -123,19 +169,60 @@ module apiWebApp 'webApp.bicep' = {
     clientAffinityEnabled: false
     httpsOnly: true
     kind: 'app,linux'
+    useManagedIdentity: true
+  }
+}
+
+resource keyVaultSecretsUserRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(keyVault.id, apiWebAppName, '4633458b-17de-408a-b874-0445c86b69e6')
+  scope: keyVault
+  properties: {
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      '4633458b-17de-408a-b874-0445c86b69e6'
+    ) // Key Vault Secrets User
+    principalId: apiWebApp.outputs.principalId
+    principalType: 'ServicePrincipal'
   }
 }
 
 resource apiWebAppConfig 'Microsoft.Web/sites/config@2024-04-01' = {
   name: '${apiWebAppName}/web'
-  dependsOn: [apiWebApp]
+  dependsOn: [apiWebApp, keyVaultSecretsUserRoleAssignment]
   properties: {
     linuxFxVersion: 'DOTNETCORE|9.0'
     cors: {
       allowedOrigins: [uiWebApp.outputs.endpoint]
     }
     appSettings: [
-      { name: 'APPLICATIONINSIGHTS_CONNECTION_STRING', value: appInsights.properties.ConnectionString }
+      {
+        name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+        value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=ApplicationInsights--ConnectionString)'
+      }
+      {
+        name: 'EMAIL__CONNECTIONSTRING'
+        value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${communicationServices.outputs.connectionStringSecretName})'
+      }
+      {
+        name: 'EMAIL__SENDEREMAIL'
+        value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${communicationServices.outputs.senderEmailSecretName})'
+      }
+      {
+        name: 'REPLICATE__TOKEN'
+        value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=Replicate--Token)'
+      }
+      {
+        name: 'REPLICATE__OWNER'
+        value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=Replicate--Owner)'
+      }
+      {
+        name: 'SECURITY__AUTHENTICATION__AUTHORITY'
+        value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=Authentication--Authority)'
+      }
+      {
+        name: 'SECURITY__AUTHENTICATION__AUDIENCE'
+        value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=Authentication--Audience)'
+      }
     ]
   }
 }
