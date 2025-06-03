@@ -50,6 +50,7 @@ namespace FotoGen.Infrastructure
             return $"{EscapeCsvField(entity.Id)}," +
                    $"{EscapeCsvField(entity.ModelName)}," +
                    $"{EscapeCsvField(entity.UserEmail)}," +
+                   $"{EscapeCsvField(entity.UserName)}," +
                    $"{EscapeCsvField(entity.ImageUrl)}," +
                    $"{EscapeCsvField(entity.TriggerWord)}," +
                    $"{entity.Status}," +
@@ -67,12 +68,13 @@ namespace FotoGen.Infrastructure
                 Id = UnescapeCsvField(parts[0]),
                 ModelName = UnescapeCsvField(parts[1]),
                 UserEmail = UnescapeCsvField(parts[2]),
-                ImageUrl = UnescapeCsvField(parts[3]),
-                TriggerWord = UnescapeCsvField(parts[4]),
-                Status = (TrainModelStatus)Enum.Parse(typeof(TrainModelStatus), parts[5]),
-                CreatedAt = DateTime.Parse(parts[6], CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
-                SuccessedAt = string.IsNullOrEmpty(parts[7]) ? null : DateTime.Parse(parts[7], CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
-                CanceledUrl = string.IsNullOrEmpty(parts[8]) ? null : UnescapeCsvField(parts[8])
+                UserName = UnescapeCsvField(parts[3]),
+                ImageUrl = UnescapeCsvField(parts[4]),
+                TriggerWord = UnescapeCsvField(parts[5]),
+                Status = (TrainModelStatus)Enum.Parse(typeof(TrainModelStatus), parts[6]),
+                CreatedAt = DateTime.Parse(parts[7], CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+                SuccessedAt = string.IsNullOrEmpty(parts[8]) ? null : DateTime.Parse(parts[7], CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+                CanceledUrl = string.IsNullOrEmpty(parts[9]) ? null : UnescapeCsvField(parts[8])
             };
         }
     }

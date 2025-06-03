@@ -24,7 +24,7 @@ namespace FotoGen.Infrastructure.Repositories
             if (!File.Exists(_csvFilePath))
             {
                 File.WriteAllText(_csvFilePath,
-                    "Id,ModelName,UserEmail,ImageUrl,TriggerWord,Status,CreatedAt,SuccessedAt,CanceledUrl\n");
+                    "Id,ModelName,UserEmail,UserName,ImageUrl,TriggerWord,Status,CreatedAt,SuccessedAt,CanceledUrl\n");
             }
         }
 

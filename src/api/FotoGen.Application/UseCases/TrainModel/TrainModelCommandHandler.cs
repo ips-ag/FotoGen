@@ -47,10 +47,10 @@ public class TrainModelCommandHandler : IRequestHandler<TrainModelCommand, BaseR
         }
         string triggerWord = Helper.GetTriggerWordFromUserName(request.ModelName);
         var trainModelDto = new TrainModelRequest(request.ModelName, request.InputImageUrl, triggerWord);
-        var trainModelResult = await _replicateService.TrainModelAsync(trainModelDto);
+        //var trainModelResult = await _replicateService.TrainModelAsync(trainModelDto);
         ////test
-        //var trainModelResponseDto = new TrainModelResponseDto { CanceledUrl = "https://api.replicate.com/v1/predictions/vytn2aq645rme0cq2q6az1erym/cancel", Id = "vytn2aq645rme0cq2q6az1erym", Status = "staring" };
-        //var trainModelResult = BaseResponse<TrainModelResponseDto>.Success(trainModelResponseDto);
+        var trainModelResponseDto = new TrainModelResponse("vytn2aq645rme0cq2q6az1erym", "starting", "https://api.replicate.com/v1/predictions/vytn2aq645rme0cq2q6az1erym/cancel");
+        var trainModelResult = BaseResponse<TrainModelResponse>.Success(trainModelResponseDto);
         ////end test code
         if (!trainModelResult.IsSuccess)
         {
