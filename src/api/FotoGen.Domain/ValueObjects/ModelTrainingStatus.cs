@@ -1,6 +1,6 @@
 namespace FotoGen.Domain.ValueObjects
 {
-    public enum TrainModelStatus
+    public enum ModelTrainingStatus
     {
         InProgress,
         Succeeded,

@@ -1,6 +1,5 @@
-using System.Security.Claims;
+using FotoGen.Application.UseCases.CheckUserModelAvailable;
 using FotoGen.Application.UseCases.GeneratePhoto;
-using FotoGen.Application.UseCases.GetUserAvailableModel;
 using FotoGen.Application.UseCases.TrainModel;
 using FotoGen.Extensions;
 using FotoGen.Requests;
@@ -16,22 +15,16 @@ namespace FotoGen.Controllers;
 public class IntegrationController : ControllerBase
 {
     private readonly IMediator _mediator;
-    private readonly IUserContext _userContext;
 
-    public IntegrationController(IMediator mediator, IUserContext userContext)
+    public IntegrationController(IMediator mediator)
     {
         _mediator = mediator;
-        _userContext = userContext;
     }
 
     [HttpPost("generate-photo")]
     [ProducesResponseType<GeneratePhotoResponse>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GeneratePhotoAsync(GeneratePhotoRequest request, CancellationToken cancel)
     {
-        if (string.IsNullOrEmpty(request.ModelName))
-        {
-            request.ModelName = _userContext.UserId.ToLower();
-        }
         var command = new GeneratePhotoCommand { ModelName = request.ModelName, Prompt = request.Prompt };
         var result = await _mediator.Send(command, cancel);
         return result.ToActionResult();
@@ -41,8 +34,7 @@ public class IntegrationController : ControllerBase
     [ProducesResponseType<bool>(StatusCodes.Status200OK)]
     public async Task<IActionResult> CheckUserModelAvailableAsync(string? modelName, CancellationToken cancel)
     {
-        if(string.IsNullOrEmpty(modelName)) modelName = _userContext.UserId;
-        var query = new CheckUserModelAvailableQuery { ModelName = modelName.ToLower() };
+        var query = new CheckUserModelAvailableQuery { ModelName = modelName };
         var result = await _mediator.Send(query, cancel);
         return result.ToActionResult();
     }
@@ -53,9 +45,6 @@ public class IntegrationController : ControllerBase
     {
         var command = new TrainModelCommand
         {
-            ModelName = _userContext.UserId.ToLower(),
-            UserName = _userContext.UserName,
-            UserEmail = _userContext.Email,
             InputImageUrl = request.ImageUrl
         };
         var result = await _mediator.Send(command, cancel);

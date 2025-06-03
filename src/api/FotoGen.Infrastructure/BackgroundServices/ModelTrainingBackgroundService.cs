@@ -1,6 +1,6 @@
 using FotoGen.Application.Events;
 using FotoGen.Application.Interfaces;
-using FotoGen.Domain.Interfaces;
+using FotoGen.Domain.Repositories;
 using FotoGen.Domain.ValueObjects;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,10 +35,10 @@ public class ModelTrainingBackgroundService : BackgroundService
             try
             {
                 using var scope = _serviceProvider.CreateScope();
-                var modelRepository = scope.ServiceProvider.GetRequiredService<ITrainedModelRepository>();
+                var modelRepository = scope.ServiceProvider.GetRequiredService<IModelTrainingRepository>();
                 var replicateClient = scope.ServiceProvider.GetRequiredService<IReplicateService>();
                 var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-                var modelsInTraining = await modelRepository.GetByStatusAsync(TrainModelStatus.InProgress);
+                var modelsInTraining = await modelRepository.GetByStatusAsync(ModelTrainingStatus.InProgress);
 
                 if (modelsInTraining.Count == 0)
                 {
@@ -49,28 +49,26 @@ public class ModelTrainingBackgroundService : BackgroundService
 
                 _logger.LogInformation("Checking status for {ModelCount} models in training", modelsInTraining.Count);
 
-              foreach (var trainedModel in modelsInTraining)
+                foreach (var modelTraining in modelsInTraining)
                 {
                     try
                     {
-                        var statusResult = await replicateClient.GetTrainModelStatusAsync(trainedModel.Id);
-
+                        var statusResult = await replicateClient.GetTrainModelStatusAsync(modelTraining.Id);
                         if (!statusResult.IsSuccess)
                         {
                             _logger.LogWarning(
                                 "Failed to get status for model {ModelId}: {Error}",
-                                trainedModel.Id,
+                                modelTraining.Id,
                                 statusResult.ErrorCode);
                             continue;
                         }
                         var trainedModelResult = statusResult.Data;
                         if (string.IsNullOrEmpty(trainedModelResult?.Status))
                         {
-                            _logger.LogWarning("Empty status received for model {ModelId}", trainedModel.Id);
+                            _logger.LogWarning("Empty status received for model {ModelId}", modelTraining.Id);
                             continue;
                         }
-
-                        if (!Enum.TryParse<TrainModelStatus>(
+                        if (!Enum.TryParse<ModelTrainingStatus>(
                                 trainedModelResult.Status,
                                 ignoreCase: true,
                                 out var newStatus) ||
@@ -79,50 +77,50 @@ public class ModelTrainingBackgroundService : BackgroundService
                             _logger.LogWarning(
                                 "Invalid status '{Status}' received for model {ModelId}",
                                 trainedModelResult?.Status,
-                                trainedModel.Id);
+                                modelTraining.Id);
                             continue;
                         }
-                        if (newStatus == trainedModel.Status) continue;
-                        trainedModel.Status = newStatus;
-                        trainedModel.SuccessedAt = newStatus == TrainModelStatus.Succeeded ? DateTime.UtcNow : null;
-                        await modelRepository.UpdateAsync(trainedModel);
-
-                        if (newStatus == TrainModelStatus.Succeeded)
+                        if (newStatus == modelTraining.TrainingStatus) continue;
+                        var updatedModelTraining = modelTraining with
+                        {
+                            TrainingStatus = newStatus,
+                            SucceededAt = newStatus == ModelTrainingStatus.Succeeded ? DateTime.UtcNow : null
+                        };
+                        await modelRepository.UpdateAsync(updatedModelTraining);
+                        if (newStatus == ModelTrainingStatus.Succeeded)
                         {
                             await mediator.Publish(
                                 new ModelTrainingSucceededEvent(
                                     trainedModelResult.Id,
                                     trainedModelResult.Model,
                                     trainedModelResult.Version,
-                                    trainedModel.UserEmail,
-                                    trainedModel.UserName,
-                                    trainedModel.ModelName),
+                                    modelTraining.UserEmail,
+                                    modelTraining.UserName,
+                                    modelTraining.ModelName),
                                 stoppingToken);
                         }
-                        else if (newStatus == TrainModelStatus.Failed)
+                        else if (newStatus == ModelTrainingStatus.Failed)
                         {
                             await mediator.Publish(
                                 new ModelTrainingFailedEvent(
                                     trainedModelResult.Id,
                                     trainedModelResult.Model,
                                     trainedModelResult.Version,
-                                    trainedModel.UserEmail,
+                                    modelTraining.UserEmail,
                                     statusResult.ErrorCode.ToString() ??
                                     "Training failed"),
                                 stoppingToken);
                         }
-
                         _logger.LogInformation(
                             "Model {ModelId} status updated to {Status}",
-                            trainedModel.Id,
+                            modelTraining.Id,
                             newStatus);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error checking status for model {ModelId}", trainedModel.Id);
+                        _logger.LogError(ex, "Error checking status for model {ModelId}", modelTraining.Id);
                     }
                 }
-
                 consecutiveErrors = 0;
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
@@ -132,19 +130,16 @@ public class ModelTrainingBackgroundService : BackgroundService
                     ex,
                     "Error in Model Training Background Service (Consecutive errors: {ErrorCount})",
                     consecutiveErrors);
-
                 if (consecutiveErrors >= MaxConsecutiveErrors)
                 {
                     _logger.LogCritical(
-                        "Reached maximum consecutive errors ({MaxErrors}). Stopping service.",
+                        "Reached maximum consecutive errors ({MaxErrors}). Stopping service",
                         MaxConsecutiveErrors);
                     break;
                 }
             }
-
             await Task.Delay(_checkInterval, stoppingToken);
         }
-
         _logger.LogInformation("Model Training Background Service is stopping");
     }
 }

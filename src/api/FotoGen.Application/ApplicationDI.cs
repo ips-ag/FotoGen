@@ -11,7 +11,11 @@ public static class ApplicationDI
     public static void AddApplicationDI(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<AppSettings>(configuration.GetSection(AppSettings.Section));
-        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+        services.AddMediatR(cfg =>
+        {
+            cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+            cfg.Lifetime = ServiceLifetime.Scoped;
+        });
         services.AddValidatorsFromAssembly(typeof(ApplicationDI).Assembly);
     }
 }
