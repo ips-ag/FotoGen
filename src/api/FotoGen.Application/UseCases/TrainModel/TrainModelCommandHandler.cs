@@ -36,9 +36,9 @@ public class TrainModelCommandHandler : IRequestHandler<TrainModelCommand, BaseR
             return BaseResponse<TrainModelResponse>.Fail(validationResult.ToDictionary());
         }
         var isModelExisted = await _replicateService.GetModelAsync(request.ModelName);
-        if (!isModelExisted.IsSuccess)
+        if (!isModelExisted.IsSuccess && isModelExisted.ErrorCode == ErrorCode.ReplicateModelNotFound)
         {
-            var createReplicateModelRequestDto = new CreateModelRequest(request.UserName);
+            var createReplicateModelRequestDto = new CreateModelRequest(request.ModelName);
             var createModelResult = await _replicateService.CreateReplicateModelAsync(createReplicateModelRequestDto);
             if (!createModelResult.IsSuccess)
             {

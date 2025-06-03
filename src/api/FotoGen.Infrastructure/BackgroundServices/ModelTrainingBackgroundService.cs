@@ -49,7 +49,7 @@ public class ModelTrainingBackgroundService : BackgroundService
 
                 _logger.LogInformation("Checking status for {ModelCount} models in training", modelsInTraining.Count);
 
-                foreach (var trainedModel in modelsInTraining)
+              foreach (var trainedModel in modelsInTraining)
                 {
                     try
                     {

@@ -16,23 +16,22 @@ namespace FotoGen.Controllers;
 public class IntegrationController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly IUserContext _userContext;
 
-    public IntegrationController(IMediator mediator)
+    public IntegrationController(IMediator mediator, IUserContext userContext)
     {
         _mediator = mediator;
+        _userContext = userContext;
     }
 
     [HttpPost("generate-photo")]
     [ProducesResponseType<GeneratePhotoResponse>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GeneratePhotoAsync(GeneratePhotoRequest request, CancellationToken cancel)
     {
-        //TODO: Get from jwt token
         if (string.IsNullOrEmpty(request.ModelName))
         {
-            //Get from userId
-            request.ModelName = "e8f678ce-1087-4411-a887-6fa6622e1a42";
+            request.ModelName = _userContext.UserId.ToLower();
         }
-        //TODO: Request validation
         var command = new GeneratePhotoCommand { ModelName = request.ModelName, Prompt = request.Prompt };
         var result = await _mediator.Send(command, cancel);
         return result.ToActionResult();
@@ -42,8 +41,8 @@ public class IntegrationController : ControllerBase
     [ProducesResponseType<bool>(StatusCodes.Status200OK)]
     public async Task<IActionResult> CheckUserModelAvailableAsync(string? modelName, CancellationToken cancel)
     {
-        if (string.IsNullOrEmpty(modelName)) modelName = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var query = new CheckUserModelAvailableQuery { ModelName = modelName };
+        if(string.IsNullOrEmpty(modelName)) modelName = _userContext.UserId;
+        var query = new CheckUserModelAvailableQuery { ModelName = modelName.ToLower() };
         var result = await _mediator.Send(query, cancel);
         return result.ToActionResult();
     }
@@ -52,14 +51,12 @@ public class IntegrationController : ControllerBase
     [ProducesResponseType<TrainModelResponse>(StatusCodes.Status200OK)]
     public async Task<IActionResult> TrainModelAsync(TrainModelRequest request, CancellationToken cancel)
     {
-        //TODO: Get from jwt token
-        var userName = "Cuong";
-        var userId = "e8f678ce-1087-4411-a887-6fa6622e1a42";
-        var email = "abc@gmail.com";
-        //TODO: Request validation
         var command = new TrainModelCommand
         {
-            ModelName = userId, UserName = userName, UserEmail = email, InputImageUrl = request.ImageUrl
+            ModelName = _userContext.UserId.ToLower(),
+            UserName = _userContext.UserName,
+            UserEmail = _userContext.Email,
+            InputImageUrl = request.ImageUrl
         };
         var result = await _mediator.Send(command, cancel);
         return result.ToActionResult();

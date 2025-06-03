@@ -1,8 +1,8 @@
+using FotoGen;
 using FotoGen.Application;
 using FotoGen.Extensions.OpenApi;
 using FotoGen.Extensions.OpenApi.Configuration;
 using FotoGen.Extensions.Security;
-using FotoGen.Extensions.Security.Configuration;
 using FotoGen.Infrastructure;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
@@ -10,6 +10,8 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("secrets.json", optional: true, reloadOnChange: true);
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserContext, UserContext>();
 builder.Services.AddControllers();
 builder.Services.AddApplicationDI();
 builder.Services.AddInfrastructureDI(builder.Configuration);
@@ -17,7 +19,15 @@ builder.Services.AddCustomApiVersioning();
 builder.Services.AddSwaggerGenRespectingCustomApiVersioning();
 builder.Services.ConfigureAuthentication();
 builder.Services.ConfigureAuthorization();
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        policy => policy
+            .WithOrigins("http://localhost:8080") 
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials());
+});
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -46,7 +56,7 @@ if (app.Environment.IsDevelopment())
         }
     });
 }
-
+app.UseCors("AllowReactApp");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

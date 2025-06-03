@@ -6,5 +6,6 @@ namespace FotoGen.Application.Helpers
         {
             return userName.First().ToString();
         }
+
     }
 }

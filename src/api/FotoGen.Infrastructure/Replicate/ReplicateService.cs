@@ -57,7 +57,7 @@ namespace FotoGen.Infrastructure.Replicate
             var response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
-                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound || response.StatusCode == System.Net.HttpStatusCode.Gone)
                     return BaseResponse<bool>.Fail(ErrorCode.ReplicateModelNotFound);
                 return BaseResponse<bool>.Fail(ErrorCode.GetReplicateModelFail);
             }
