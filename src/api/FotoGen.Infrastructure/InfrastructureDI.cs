@@ -1,8 +1,10 @@
 using System.Net;
 using System.Net.Http.Headers;
 using Azure.Communication.Email;
+using Azure.Storage.Blobs;
 using FotoGen.Application.Interfaces;
 using FotoGen.Domain.Interfaces;
+using FotoGen.Infrastructure.AzureStorage;
 using FotoGen.Infrastructure.BackgroundServices;
 using FotoGen.Infrastructure.Email;
 using FotoGen.Infrastructure.Replicate;
@@ -22,6 +24,7 @@ namespace FotoGen.Infrastructure
             services.Configure<ReplicateSetting>(configuration.GetSection(ReplicateSetting.Section));
             services.Configure<ModelTrainingSettings>(configuration.GetSection(ModelTrainingSettings.Section));
             services.Configure<EmailSettings>(configuration.GetSection(EmailSettings.Section));
+            services.Configure<AzureStorageSettings>(configuration.GetSection(AzureStorageSettings.Section));
             services.AddScoped<ITrainedModelRepository>(provider =>
             {
                 var options = provider.GetRequiredService<IOptions<ModelTrainingSettings>>().Value;
@@ -47,6 +50,12 @@ namespace FotoGen.Infrastructure
                 var settings = provider.GetRequiredService<IOptions<EmailSettings>>().Value;
                 return new EmailClient(settings.ConnectionString);
             });
+            services.AddSingleton(provider =>
+            {
+                var settings = provider.GetRequiredService<IOptions<AzureStorageSettings>>().Value;
+                return new BlobServiceClient(settings.ConnectionString);
+            });
+            services.AddScoped<IAzureStorageService, AzureStorageService>();
             services.AddHostedService<ModelTrainingBackgroundService>();
 
         }
