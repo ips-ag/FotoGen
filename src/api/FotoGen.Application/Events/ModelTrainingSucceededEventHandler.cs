@@ -27,7 +27,7 @@ public class ModelTrainingSucceededEventHandler : INotificationHandler<ModelTrai
     {
         _logger.LogInformation($"Model training completed: {notification.Id}");
         var applink = _appSettings.Host;
-        string sharedLink = $"{applink}/{notification.UserName}/{notification.ModelName}";
+        string sharedLink = $"{applink}/model/{notification.UserName}/{notification.ModelName}";
         await _emailService.SendTrainingCompletedEmailAsync(
             notification.UserEmail,
             notification.Model,
