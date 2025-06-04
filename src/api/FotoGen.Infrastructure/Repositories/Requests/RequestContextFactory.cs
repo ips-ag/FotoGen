@@ -24,8 +24,9 @@ internal class RequestContextFactory
         string? id = GetId();
         string? name = GetClaimValue(ClaimTypes.GivenName);
         string? email = GetClaimValue(ClaimTypes.Email);
-        if (id is null || name is null || email is null) throw new InvalidOperationException("Unknown user");
-        return new User(id, name, email);
+        string? familyName = GetClaimValue(ClaimTypes.Surname);
+        if (id is null || name is null || email is null || familyName is null) throw new InvalidOperationException("Unknown user");
+        return new User(id, name, email, familyName);
     }
     private string GetId()
     {

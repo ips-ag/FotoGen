@@ -38,7 +38,7 @@ public class TrainModelCommandHandler : IRequestHandler<TrainModelCommand, BaseR
             return BaseResponse<TrainModelResponse>.Fail(validationResult.ToDictionary());
         }
         var user = (await _requestContextRepository.GetAsync()).User;
-        string modelName = user.Id;
+        string modelName = Helper.GetModelNameFromUserInfo(user);
         var modelExists = await _replicateService.GetModelAsync(modelName);
         if (modelExists is { IsSuccess: false, ErrorCode: ErrorCode.ReplicateModelNotFound })
         {
@@ -49,7 +49,7 @@ public class TrainModelCommandHandler : IRequestHandler<TrainModelCommand, BaseR
                 return BaseResponse<TrainModelResponse>.Fail(ErrorCode.CreateReplicateModelFail);
             }
         }
-        string triggerWord = Helper.GetTriggerWordFromUserName(modelName);
+        string triggerWord = user.GivenName;
         var trainModelDto = new TrainModelRequest(modelName, request.InputImageUrl, triggerWord);
         var trainModelResult = await _replicateService.TrainModelAsync(trainModelDto);
         ////test
@@ -64,7 +64,7 @@ public class TrainModelCommandHandler : IRequestHandler<TrainModelCommand, BaseR
             Id: trainModelResult.Data.Id,
             ModelName: modelName,
             UserEmail: user.Email,
-            UserName: user.Name,
+            UserName: user.GivenName,
             ImageUrl: request.InputImageUrl,
             TriggerWord: triggerWord,
             TrainingStatus: ModelTrainingStatus.InProgress,

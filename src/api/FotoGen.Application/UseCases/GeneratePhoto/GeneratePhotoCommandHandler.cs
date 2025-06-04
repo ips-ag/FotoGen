@@ -1,4 +1,5 @@
 using FluentValidation;
+using FotoGen.Application.Helpers;
 using FotoGen.Application.Interfaces;
 using FotoGen.Domain.Entities.Response;
 using FotoGen.Domain.Repositories;
@@ -34,18 +35,26 @@ public class GeneratePhotoCommandHandler : IRequestHandler<GeneratePhotoCommand,
         {
             return BaseResponse<GeneratePhotoResponse>.Fail(validationResult.ToDictionary());
         }
-        string modelName = request.ModelName?.ToLower() ?? (await _requestContextRepository.GetAsync()).User.Id;
-        var replicateResponse = await _replicateService.GeneratePhotoAsync(request.Prompt, modelName);
+        var user = (await _requestContextRepository.GetAsync()).User;
+        var modelName = string.IsNullOrEmpty(request.ModelName)
+            ? Helper.GetModelNameFromUserInfo(user)
+            : request.ModelName.ToLower();
+        var triggerWords = string.IsNullOrEmpty(modelName)
+            ? user.GivenName
+            : Helper.GetTriggerWordFromModelName(modelName);
+        var promptWithTriggerWords = $"{triggerWords} {request.Prompt}";
+        var replicateResponse = await _replicateService.GeneratePhotoAsync(promptWithTriggerWords, modelName);
         if (!replicateResponse.IsSuccess) return BaseResponse<GeneratePhotoResponse>.Fail(ErrorCode.GeneratePhotoFail);
         byte[] bytesImage = await _downloadClient.GetByteArrayAsync(replicateResponse.Data.StreamUrl);
         if (bytesImage.Length == 0)
         {
             return BaseResponse<GeneratePhotoResponse>.Fail(ErrorCode.ImageGenerationResponseEmpty);
         }
-        string base64Image = Convert.ToBase64String(bytesImage);
+        var base64Image = Convert.ToBase64String(bytesImage);
         var result = new GeneratePhotoResponse
         {
-            Base64Image = base64Image, OutputFormat = replicateResponse.Data.OutputFormat
+            Base64Image = base64Image,
+            OutputFormat = replicateResponse.Data.OutputFormat
         };
         return BaseResponse<GeneratePhotoResponse>.Success(result);
     }

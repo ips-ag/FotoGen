@@ -1,3 +1,3 @@
 namespace FotoGen.Domain.Entities.Requests;
 
-public record User(string Id, string Name, string Email);
+public record User(string Id, string GivenName, string Email, string FamilyName);
