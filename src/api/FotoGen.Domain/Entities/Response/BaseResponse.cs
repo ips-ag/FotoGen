@@ -2,17 +2,23 @@ namespace FotoGen.Domain.Entities.Response;
 
 public class BaseResponse<T>
 {
+    private T? _data;
     public bool IsSuccess { get; set; }
     public string Message { get; set; } = string.Empty;
     public ErrorCode? ErrorCode { get; set; }
-    public T? Data { get; set; }
+
+    public T Data
+    {
+        get => _data ?? throw new InvalidOperationException("Response contains no data");
+    }
+
     public IDictionary<string, string[]>? Errors { get; set; }
 
     public static BaseResponse<T> Success(T? data = default, string? message = "")
     {
         return new BaseResponse<T>
         {
-            IsSuccess = true, Data = data, Message = message ?? string.Empty, ErrorCode = null
+            IsSuccess = true, _data = data, Message = message ?? string.Empty, ErrorCode = null
         };
     }
 

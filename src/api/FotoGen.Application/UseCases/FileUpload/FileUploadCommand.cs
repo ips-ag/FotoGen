@@ -2,11 +2,9 @@ using FotoGen.Domain.Entities.Response;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 
-namespace FotoGen.Application.UseCases.UploadFile
+namespace FotoGen.Application.UseCases.FileUpload;
+
+public class FileUploadCommand : IRequest<BaseResponse<string>>
 {
-    public class FileUploadCommand : IRequest<BaseResponse<string>>
-    {
-        public string UserId {  get; set; }
-        public IFormFile File { get; set; }
-    }
+    public required IFormFile File { get; init; }
 }
