@@ -21,18 +21,17 @@ internal class RequestContextFactory
 
     private User GetUser()
     {
-        string? id = GetId();
-        string? name = GetClaimValue(ClaimTypes.GivenName);
+        string? id = GetClaimValue(ClaimTypes.NameIdentifier);
+        string? firstName = GetClaimValue(ClaimTypes.GivenName);
         string? email = GetClaimValue(ClaimTypes.Email);
-        string? familyName = GetClaimValue(ClaimTypes.Surname);
-        if (id is null || name is null || email is null || familyName is null) throw new InvalidOperationException("Unknown user");
-        return new User(id, name, email, familyName);
+        string? fullName = GetClaimValue("name");
+        if (id is null || firstName is null || fullName is null || email is null)
+        {
+            throw new InvalidOperationException("Unknown user");
+        }
+        return new User(id, firstName, fullName, email);
     }
-    private string GetId()
-    {
-        return _httpContextAccessor.HttpContext?.User.FindFirstValue("http://schemas.microsoft.com/identity/claims/objectidentifier");
 
-    }
     private string? GetClaimValue(string claimType)
     {
         return _httpContextAccessor.HttpContext?.User.Claims.FirstOrDefault(c => c.Type == claimType)?.Value;

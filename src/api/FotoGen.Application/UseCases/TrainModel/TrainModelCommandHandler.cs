@@ -1,10 +1,9 @@
 using FluentValidation;
-using FotoGen.Application.Helpers;
 using FotoGen.Application.Interfaces;
+using FotoGen.Domain.Entities;
 using FotoGen.Domain.Entities.Models;
 using FotoGen.Domain.Entities.Response;
 using FotoGen.Domain.Repositories;
-using FotoGen.Domain.ValueObjects;
 using MediatR;
 
 namespace FotoGen.Application.UseCases.TrainModel;
@@ -38,7 +37,7 @@ public class TrainModelCommandHandler : IRequestHandler<TrainModelCommand, BaseR
             return BaseResponse<TrainModelResponse>.Fail(validationResult.ToDictionary());
         }
         var user = (await _requestContextRepository.GetAsync()).User;
-        string modelName = Helper.GetModelNameFromUserInfo(user);
+        string modelName = new ModelName(user);
         var modelExists = await _replicateService.GetModelAsync(modelName);
         if (modelExists is { IsSuccess: false, ErrorCode: ErrorCode.ReplicateModelNotFound })
         {
@@ -49,13 +48,9 @@ public class TrainModelCommandHandler : IRequestHandler<TrainModelCommand, BaseR
                 return BaseResponse<TrainModelResponse>.Fail(ErrorCode.CreateReplicateModelFail);
             }
         }
-        string triggerWord = user.GivenName;
+        string triggerWord = user.FirstName;
         var trainModelDto = new TrainModelRequest(modelName, request.InputImageUrl, triggerWord);
         var trainModelResult = await _replicateService.TrainModelAsync(trainModelDto);
-        ////test
-        //var trainModelResponseDto = new TrainModelResponse("vytn2aq645rme0cq2q6az1erym", "starting", "https://api.replicate.com/v1/predictions/vytn2aq645rme0cq2q6az1erym/cancel");
-        //var trainModelResult = BaseResponse<TrainModelResponse>.Success(trainModelResponseDto);
-        ////end test code
         if (!trainModelResult.IsSuccess)
         {
             return BaseResponse<TrainModelResponse>.Fail(ErrorCode.TrainReplicateModelFail);
@@ -64,7 +59,7 @@ public class TrainModelCommandHandler : IRequestHandler<TrainModelCommand, BaseR
             Id: trainModelResult.Data.Id,
             ModelName: modelName,
             UserEmail: user.Email,
-            UserName: user.GivenName,
+            UserName: user.FirstName,
             ImageUrl: request.InputImageUrl,
             TriggerWord: triggerWord,
             TrainingStatus: ModelTrainingStatus.InProgress,

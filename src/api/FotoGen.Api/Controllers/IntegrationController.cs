@@ -23,16 +23,23 @@ public class IntegrationController : ControllerBase
 
     [HttpPost("generate-photo")]
     [ProducesResponseType<GeneratePhotoResponse>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GeneratePhotoAsync(GeneratePhotoRequest request, CancellationToken cancel)
+    public async Task<IActionResult> GeneratePhotoAsync(
+        [FromBody] GeneratePhotoRequest request,
+        CancellationToken cancel)
     {
-        var command = new GeneratePhotoCommand { ModelName = request.ModelName, Prompt = request.Prompt };
+        var command = new GeneratePhotoCommand
+        {
+            ModelName = request.ModelName, TriggerWord = request.TriggerWord, Prompt = request.Prompt
+        };
         var result = await _mediator.Send(command, cancel);
         return result.ToActionResult();
     }
 
     [HttpGet("check-user-model-available")]
     [ProducesResponseType<bool>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> CheckUserModelAvailableAsync(string? modelName, CancellationToken cancel)
+    public async Task<IActionResult> CheckUserModelAvailableAsync(
+        [FromQuery] string? modelName,
+        CancellationToken cancel)
     {
         var query = new CheckUserModelAvailableQuery { ModelName = modelName };
         var result = await _mediator.Send(query, cancel);
@@ -43,10 +50,7 @@ public class IntegrationController : ControllerBase
     [ProducesResponseType<TrainModelResponse>(StatusCodes.Status200OK)]
     public async Task<IActionResult> TrainModelAsync(TrainModelRequest request, CancellationToken cancel)
     {
-        var command = new TrainModelCommand
-        {
-            InputImageUrl = request.ImageUrl
-        };
+        var command = new TrainModelCommand { InputImageUrl = request.ImageUrl };
         var result = await _mediator.Send(command, cancel);
         return result.ToActionResult();
     }

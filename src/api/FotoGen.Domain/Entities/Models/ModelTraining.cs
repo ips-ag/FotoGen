@@ -1,5 +1,3 @@
-using FotoGen.Domain.ValueObjects;
-
 namespace FotoGen.Domain.Entities.Models;
 
 public record ModelTraining(

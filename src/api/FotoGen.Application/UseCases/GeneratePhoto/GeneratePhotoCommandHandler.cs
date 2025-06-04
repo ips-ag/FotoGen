@@ -1,6 +1,6 @@
 using FluentValidation;
-using FotoGen.Application.Helpers;
 using FotoGen.Application.Interfaces;
+using FotoGen.Domain.Entities.Models;
 using FotoGen.Domain.Entities.Response;
 using FotoGen.Domain.Repositories;
 using MediatR;
@@ -36,25 +36,20 @@ public class GeneratePhotoCommandHandler : IRequestHandler<GeneratePhotoCommand,
             return BaseResponse<GeneratePhotoResponse>.Fail(validationResult.ToDictionary());
         }
         var user = (await _requestContextRepository.GetAsync()).User;
-        var modelName = string.IsNullOrEmpty(request.ModelName)
-            ? Helper.GetModelNameFromUserInfo(user)
-            : request.ModelName.ToLower();
-        var triggerWords = string.IsNullOrEmpty(modelName)
-            ? user.GivenName
-            : Helper.GetTriggerWordFromModelName(modelName);
-        var promptWithTriggerWords = $"{triggerWords} {request.Prompt}";
-        var replicateResponse = await _replicateService.GeneratePhotoAsync(promptWithTriggerWords, modelName);
+        string modelName = string.IsNullOrEmpty(request.ModelName) ? new ModelName(user) : request.ModelName.ToLower();
+        string triggerWord = string.IsNullOrEmpty(request.TriggerWord) ? new TriggerWord(user) : request.TriggerWord;
+        string prompt = request.Prompt.Contains(triggerWord) ? request.Prompt : $"{triggerWord} {request.Prompt}";
+        var replicateResponse = await _replicateService.GeneratePhotoAsync(prompt, modelName);
         if (!replicateResponse.IsSuccess) return BaseResponse<GeneratePhotoResponse>.Fail(ErrorCode.GeneratePhotoFail);
         byte[] bytesImage = await _downloadClient.GetByteArrayAsync(replicateResponse.Data.StreamUrl);
         if (bytesImage.Length == 0)
         {
             return BaseResponse<GeneratePhotoResponse>.Fail(ErrorCode.ImageGenerationResponseEmpty);
         }
-        var base64Image = Convert.ToBase64String(bytesImage);
+        string base64Image = Convert.ToBase64String(bytesImage);
         var result = new GeneratePhotoResponse
         {
-            Base64Image = base64Image,
-            OutputFormat = replicateResponse.Data.OutputFormat
+            Base64Image = base64Image, OutputFormat = replicateResponse.Data.OutputFormat
         };
         return BaseResponse<GeneratePhotoResponse>.Success(result);
     }

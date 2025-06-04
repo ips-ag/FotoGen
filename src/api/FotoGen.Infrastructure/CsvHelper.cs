@@ -1,6 +1,6 @@
 using System.Globalization;
+using FotoGen.Domain.Entities;
 using FotoGen.Domain.Entities.Models;
-using FotoGen.Domain.ValueObjects;
 
 namespace FotoGen.Infrastructure;
 

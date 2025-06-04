@@ -9,7 +9,8 @@ public static class UseModelMapper
     {
         return new UseModelRequestModel
         {
-            Version = $"{settings.Owner}/{modelName}:{settings.Version}",
+            // Version = $"{settings.Owner}/{modelName}:{settings.Version}",
+            Version = $"{settings.Owner}/{modelName}",
             Input = new Input { Model = settings.Mode, Prompt = prompt, OutputFormat = settings.OutputFormat }
         };
     }

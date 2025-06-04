@@ -1,4 +1,4 @@
-namespace FotoGen.Domain.ValueObjects
+namespace FotoGen.Domain.Entities.Models
 {
     public enum ModelTrainingStatus
     {

@@ -1,6 +1,6 @@
 using FluentValidation;
-using FotoGen.Application.Helpers;
 using FotoGen.Application.Interfaces;
+using FotoGen.Domain.Entities.Models;
 using FotoGen.Domain.Entities.Response;
 using FotoGen.Domain.Repositories;
 using MediatR;
@@ -32,7 +32,8 @@ public class CheckUserModelAvailableQueryHandler : IRequestHandler<CheckUserMode
         {
             return BaseResponse<bool>.Fail(validationResult.ToDictionary());
         }
-        var ownerModelName = Helper.GetModelNameFromUserInfo((await _requestContextRepository.GetAsync()).User);
+        var user = (await _requestContextRepository.GetAsync()).User;
+        var ownerModelName = new ModelName(user);
         string modelName = request.ModelName?.ToLower() ?? ownerModelName;
         var response = await _replicateService.GetModelAsync(modelName);
         return response.IsSuccess

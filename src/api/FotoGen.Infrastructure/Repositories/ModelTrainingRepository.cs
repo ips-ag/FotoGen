@@ -1,6 +1,6 @@
+using FotoGen.Domain.Entities;
 using FotoGen.Domain.Entities.Models;
 using FotoGen.Domain.Repositories;
-using FotoGen.Domain.ValueObjects;
 
 namespace FotoGen.Infrastructure.Repositories;
 

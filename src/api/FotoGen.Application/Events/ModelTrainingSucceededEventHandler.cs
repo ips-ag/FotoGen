@@ -1,9 +1,8 @@
+using FotoGen.Application.Configuration;
 using FotoGen.Application.Interfaces;
-using FotoGen.Domain.Settings;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using static System.Net.WebRequestMethods;
 
 namespace FotoGen.Application.Events;
 
@@ -25,13 +24,13 @@ public class ModelTrainingSucceededEventHandler : INotificationHandler<ModelTrai
 
     public async Task Handle(ModelTrainingSucceededEvent notification, CancellationToken cancellationToken)
     {
-        _logger.LogInformation($"Model training completed: {notification.Id}");
-        var applink = _appSettings.Host;
-        string sharedLink = $"{applink}/model/{notification.UserName}/{notification.ModelName}";
+        _logger.LogInformation("Model training completed: {ModelName}", notification.ModelName);
+        string appUrl = _appSettings.Host;
+        var shareUrl = $"{appUrl}/model/{notification.UserName}/{notification.ModelName}";
         await _emailService.SendTrainingCompletedEmailAsync(
             notification.UserEmail,
             notification.Model,
-            applink,
-            sharedLink);
+            appUrl,
+            shareUrl);
     }
 }
