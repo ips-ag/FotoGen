@@ -1,5 +1,3 @@
-using System.Reflection;
-using Azure.Monitor.OpenTelemetry.AspNetCore;
 using FotoGen.Application;
 using FotoGen.Extensions.Cors;
 using FotoGen.Extensions.OpenApi;
@@ -10,7 +8,6 @@ using FotoGen.Infrastructure;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using Microsoft.OpenApi.Models;
-using OpenTelemetry.Resources;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("secrets.json", optional: true, reloadOnChange: true);
