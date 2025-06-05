@@ -1,9 +1,8 @@
-namespace FotoGen.Infrastructure.Settings
+namespace FotoGen.Infrastructure.Settings;
+
+public class EmailSettings
 {
-    public class EmailSettings
-    {
-        public const string Section = "Email";
-        public string ConnectionString {  get; init; }
-        public string SenderEmail { get; init; }
-    }
+    public const string SectionName = "Email";
+    public required string ConnectionString { get; init; }
+    public required string SenderEmail { get; init; }
 }

@@ -1,34 +1,43 @@
 using FluentValidation;
 using FotoGen.Application.Interfaces;
-using FotoGen.Application.UseCases.GetUserAvailableModel;
+using FotoGen.Domain.Entities.Models;
 using FotoGen.Domain.Entities.Response;
+using FotoGen.Domain.Repositories;
 using MediatR;
 
-namespace FotoGen.Application.UseCases.CheckUserModelAvailable
+namespace FotoGen.Application.UseCases.CheckUserModelAvailable;
+
+public class CheckUserModelAvailableQueryHandler : IRequestHandler<CheckUserModelAvailableQuery, BaseResponse<bool>>
 {
-    public class CheckUserModelAvailableQueryHandler : IRequestHandler<CheckUserModelAvailableQuery, BaseResponse<bool>>
+    private readonly IReplicateService _replicateService;
+    private readonly IValidator<CheckUserModelAvailableQuery> _validator;
+    private readonly IRequestContextRepository _requestContextRepository;
+
+    public CheckUserModelAvailableQueryHandler(
+        IReplicateService replicateService,
+        IValidator<CheckUserModelAvailableQuery> validator,
+        IRequestContextRepository requestContextRepository)
     {
-        private readonly IReplicateService _replicateService;
-        private readonly IValidator<CheckUserModelAvailableQuery> _validator;
-        public CheckUserModelAvailableQueryHandler(IReplicateService replicateService, 
-            IValidator<CheckUserModelAvailableQuery> validator)
+        _replicateService = replicateService;
+        _validator = validator;
+        _requestContextRepository = requestContextRepository;
+    }
+
+    public async Task<BaseResponse<bool>> Handle(
+        CheckUserModelAvailableQuery request,
+        CancellationToken cancellationToken)
+    {
+        var validationResult = await _validator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
         {
-            _replicateService = replicateService;
-            _validator = validator;
+            return BaseResponse<bool>.Fail(validationResult.ToDictionary());
         }
-        public async Task<BaseResponse<bool>> Handle(CheckUserModelAvailableQuery request, CancellationToken cancellationToken)
-        {
-            var validationResult = await _validator.ValidateAsync(request);
-            if (!validationResult.IsValid)
-            {
-                return BaseResponse<bool>.Fail(validationResult.ToDictionary());
-            }
-            var response = await _replicateService.GetModelAsync(request.ModelName);
-            if (response.IsSuccess) 
-            {
-                return BaseResponse<bool>.Success(true);
-            }
-            return BaseResponse<bool>.Fail(response.ErrorCode.Value);
-        }
+        var user = (await _requestContextRepository.GetAsync()).User;
+        var ownerModelName = new ModelName(user);
+        string modelName = request.ModelName?.ToLower() ?? ownerModelName;
+        var trainedModel = await _replicateService.GetTrainedModelByNameAsync(modelName, cancellationToken);
+        return trainedModel?.CanTrain == true
+            ? BaseResponse<bool>.Success(true)
+            : BaseResponse<bool>.Fail(ErrorCode.ReplicateModelNotFound);
     }
 }

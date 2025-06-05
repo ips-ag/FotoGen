@@ -6,6 +6,9 @@ public class GeneratePhotoRequest
 {
     [JsonPropertyName("modelName")]
     public string? ModelName { get; set; }
+    
+    [JsonPropertyName("triggerWord")]
+    public string? TriggerWord { get; set; }
 
     [JsonPropertyName("prompt")]
     [JsonRequired]

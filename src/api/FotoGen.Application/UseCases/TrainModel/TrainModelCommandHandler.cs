@@ -1,11 +1,9 @@
 using FluentValidation;
-using FotoGen.Application.Helpers;
 using FotoGen.Application.Interfaces;
 using FotoGen.Domain.Entities;
 using FotoGen.Domain.Entities.Models;
 using FotoGen.Domain.Entities.Response;
-using FotoGen.Domain.Interfaces;
-using FotoGen.Domain.ValueObjects;
+using FotoGen.Domain.Repositories;
 using MediatR;
 
 namespace FotoGen.Application.UseCases.TrainModel;
@@ -13,58 +11,61 @@ namespace FotoGen.Application.UseCases.TrainModel;
 public class TrainModelCommandHandler : IRequestHandler<TrainModelCommand, BaseResponse<TrainModelResponse>>
 {
     private readonly IReplicateService _replicateService;
-    private readonly ITrainedModelRepository _trainedModelRepository;
+    private readonly IModelTrainingRepository _modelTrainingRepository;
+    private readonly IRequestContextRepository _requestContextRepository;
     private readonly IValidator<TrainModelCommand> _validator;
 
     public TrainModelCommandHandler(
-        IReplicateService replicateService, 
-        ITrainedModelRepository trainedModelRepository, 
-        IValidator<TrainModelCommand> validator)
+        IReplicateService replicateService,
+        IModelTrainingRepository modelTrainingRepository,
+        IValidator<TrainModelCommand> validator,
+        IRequestContextRepository requestContextRepository)
     {
         _replicateService = replicateService;
-        _trainedModelRepository = trainedModelRepository;
+        _modelTrainingRepository = modelTrainingRepository;
         _validator = validator;
+        _requestContextRepository = requestContextRepository;
     }
 
     public async Task<BaseResponse<TrainModelResponse>> Handle(
         TrainModelCommand request,
         CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(request);
+        var validationResult = await _validator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
             return BaseResponse<TrainModelResponse>.Fail(validationResult.ToDictionary());
         }
-        var isModelExisted = await _replicateService.GetModelAsync(request.ModelName);
-        if (!isModelExisted.IsSuccess)
+        var user = (await _requestContextRepository.GetAsync()).User;
+        string modelName = new ModelName(user);
+        var trainedModel = await _replicateService.GetTrainedModelByNameAsync(modelName, cancellationToken);
+        if (trainedModel is null)
         {
-            var createReplicateModelRequestDto = new CreateModelRequest(request.UserName);
-            var createModelResult = await _replicateService.CreateReplicateModelAsync(createReplicateModelRequestDto);
+            var createReplicateModelRequestDto = new CreateTrainedModelRequest(modelName);
+            var createModelResult = await _replicateService.CreateTrainedModelAsync(createReplicateModelRequestDto);
             if (!createModelResult.IsSuccess)
             {
                 return BaseResponse<TrainModelResponse>.Fail(ErrorCode.CreateReplicateModelFail);
             }
         }
-        string triggerWord = Helper.GetTriggerWordFromUserName(request.ModelName);
-        var trainModelDto = new TrainModelRequest(request.ModelName, request.InputImageUrl, triggerWord);
-        var trainModelResult = await _replicateService.TrainModelAsync(trainModelDto);
-        ////test
-        //var trainModelResponseDto = new TrainModelResponseDto { CanceledUrl = "https://api.replicate.com/v1/predictions/vytn2aq645rme0cq2q6az1erym/cancel", Id = "vytn2aq645rme0cq2q6az1erym", Status = "staring" };
-        //var trainModelResult = BaseResponse<TrainModelResponseDto>.Success(trainModelResponseDto);
-        ////end test code
+        string triggerWord = user.FirstName;
+        var trainModelDto = new TrainModelRequest(modelName, request.InputImageUrl, triggerWord);
+        var trainModelResult = await _replicateService.CreateModelTrainingAsync(trainModelDto);
         if (!trainModelResult.IsSuccess)
         {
             return BaseResponse<TrainModelResponse>.Fail(ErrorCode.TrainReplicateModelFail);
         }
-        var trainModelEntity = new TrainModelEntity(
-            trainModelResult.Data.Id,
-            request.ModelName,
-            request.UserEmail,
-            request.InputImageUrl,
-            triggerWord,
-            TrainModelStatus.InProgress,
-            trainModelResult.Data.CancelUrl);
-        await _trainedModelRepository.AddAsync(trainModelEntity);
+        var modelTraining = new ModelTraining(
+            Id: trainModelResult.Data.Id,
+            ModelName: modelName,
+            UserEmail: user.Email,
+            UserName: user.FirstName,
+            ImageUrl: request.InputImageUrl,
+            TriggerWord: triggerWord,
+            TrainingStatus: ModelTrainingStatus.InProgress,
+            CreatedAt: DateTime.UtcNow,
+            CanceledUrl: trainModelResult.Data.CancelUrl);
+        await _modelTrainingRepository.CreateAsync(modelTraining);
         var result = new TrainModelResponse(
             trainModelResult.Data.Id,
             trainModelResult.Data.Status,

@@ -1,8 +1,8 @@
 using FotoGen.Application;
+using FotoGen.Extensions.Cors;
 using FotoGen.Extensions.OpenApi;
 using FotoGen.Extensions.OpenApi.Configuration;
 using FotoGen.Extensions.Security;
-using FotoGen.Extensions.Security.Configuration;
 using FotoGen.Infrastructure;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
@@ -11,13 +11,14 @@ using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("secrets.json", optional: true, reloadOnChange: true);
 builder.Services.AddControllers();
-builder.Services.AddApplicationDI();
-builder.Services.AddInfrastructureDI(builder.Configuration);
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddCustomApiVersioning();
 builder.Services.AddSwaggerGenRespectingCustomApiVersioning();
 builder.Services.ConfigureAuthentication();
 builder.Services.ConfigureAuthorization();
+builder.Services.ConfigureCors();
 
+builder.Services.AddApplication().AddInfrastructure();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -46,7 +47,7 @@ if (app.Environment.IsDevelopment())
         }
     });
 }
-
+app.UseCorsMiddleware();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

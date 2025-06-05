@@ -1,4 +1,5 @@
 using FotoGen.Domain.Entities.Models;
+using FotoGen.Infrastructure.Replicate.Configuration;
 using FotoGen.Infrastructure.Settings;
 
 namespace FotoGen.Infrastructure.Replicate.TrainModel;

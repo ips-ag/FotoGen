@@ -1,7 +1,8 @@
 using FotoGen.Application.Events;
 using FotoGen.Application.Interfaces;
-using FotoGen.Domain.Interfaces;
-using FotoGen.Domain.ValueObjects;
+using FotoGen.Domain.Entities.Models;
+using FotoGen.Domain.Repositories;
+using FotoGen.Infrastructure.Replicate.GetTrainedModelStatus.Converters;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -14,7 +15,7 @@ public class ModelTrainingBackgroundService : BackgroundService
     private const int MaxConsecutiveErrors = 5;
     private readonly ILogger<ModelTrainingBackgroundService> _logger;
     private readonly IServiceProvider _serviceProvider;
-    private readonly TimeSpan _checkInterval = TimeSpan.FromMinutes(5);
+    private readonly TimeSpan _checkInterval = TimeSpan.FromMinutes(1);
 
     public ModelTrainingBackgroundService(
         ILogger<ModelTrainingBackgroundService> logger,
@@ -26,7 +27,7 @@ public class ModelTrainingBackgroundService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Model Training Background Service is starting");
+        _logger.LogDebug("Model Training Background Service is starting");
 
         var consecutiveErrors = 0;
 
@@ -35,92 +36,82 @@ public class ModelTrainingBackgroundService : BackgroundService
             try
             {
                 using var scope = _serviceProvider.CreateScope();
-                var modelRepository = scope.ServiceProvider.GetRequiredService<ITrainedModelRepository>();
+                var modelRepository = scope.ServiceProvider.GetRequiredService<IModelTrainingRepository>();
                 var replicateClient = scope.ServiceProvider.GetRequiredService<IReplicateService>();
                 var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-                var modelsInTraining = await modelRepository.GetByStatusAsync(TrainModelStatus.InProgress);
-
+                var statusConverter = scope.ServiceProvider.GetRequiredService<TrainingStatusConverter>();
+                var modelsInTraining = await modelRepository.GetByStatusAsync(ModelTrainingStatus.InProgress);
                 if (modelsInTraining.Count == 0)
                 {
                     _logger.LogDebug("No models currently in training status");
                     await Task.Delay(_checkInterval, stoppingToken);
                     continue;
                 }
-
-                _logger.LogInformation("Checking status for {ModelCount} models in training", modelsInTraining.Count);
-
-                foreach (var trainedModel in modelsInTraining)
+                _logger.LogDebug("Checking status for {ModelCount} models in training", modelsInTraining.Count);
+                foreach (var modelTraining in modelsInTraining)
                 {
                     try
                     {
-                        var statusResult = await replicateClient.GetTrainModelStatusAsync(trainedModel.Id);
-
+                        var statusResult = await replicateClient.GetModelTrainingStatusAsync(modelTraining.Id);
                         if (!statusResult.IsSuccess)
                         {
                             _logger.LogWarning(
                                 "Failed to get status for model {ModelId}: {Error}",
-                                trainedModel.Id,
+                                modelTraining.Id,
                                 statusResult.ErrorCode);
                             continue;
                         }
                         var trainedModelResult = statusResult.Data;
-                        if (string.IsNullOrEmpty(trainedModelResult?.Status))
-                        {
-                            _logger.LogWarning("Empty status received for model {ModelId}", trainedModel.Id);
-                            continue;
-                        }
-
-                        if (!Enum.TryParse<TrainModelStatus>(
-                                trainedModelResult.Status,
-                                ignoreCase: true,
-                                out var newStatus) ||
-                            !Enum.IsDefined(newStatus))
+                        var newStatus = statusConverter.ToDomain(trainedModelResult.Status);
+                        if (newStatus is null)
                         {
                             _logger.LogWarning(
-                                "Invalid status '{Status}' received for model {ModelId}",
-                                trainedModelResult?.Status,
-                                trainedModel.Id);
+                                "Empty or invalid status {ModelTrainingStatus} received for model {ModelId}",
+                                trainedModelResult.Status,
+                                modelTraining.ModelName);
                             continue;
                         }
-                        if (newStatus == trainedModel.Status) continue;
-                        trainedModel.Status = newStatus;
-                        trainedModel.SuccessedAt = newStatus == TrainModelStatus.Succeeded ? DateTime.UtcNow : null;
-                        await modelRepository.UpdateAsync(trainedModel);
-
-                        if (newStatus == TrainModelStatus.Succeeded)
+                        if (newStatus == modelTraining.TrainingStatus) continue;
+                        var updatedModelTraining = modelTraining with
+                        {
+                            TrainingStatus = newStatus.Value,
+                            SucceededAt = newStatus == ModelTrainingStatus.Succeeded ? DateTime.UtcNow : null
+                        };
+                        await modelRepository.UpdateAsync(updatedModelTraining);
+                        if (newStatus == ModelTrainingStatus.Succeeded)
                         {
                             await mediator.Publish(
                                 new ModelTrainingSucceededEvent(
                                     trainedModelResult.Id,
                                     trainedModelResult.Model,
                                     trainedModelResult.Version,
-                                    trainedModel.UserEmail),
+                                    modelTraining.UserEmail,
+                                    modelTraining.UserName,
+                                    modelTraining.ModelName),
                                 stoppingToken);
                         }
-                        else if (newStatus == TrainModelStatus.Failed)
+                        else if (newStatus == ModelTrainingStatus.Failed)
                         {
                             await mediator.Publish(
                                 new ModelTrainingFailedEvent(
                                     trainedModelResult.Id,
                                     trainedModelResult.Model,
                                     trainedModelResult.Version,
-                                    trainedModel.UserEmail,
+                                    modelTraining.UserEmail,
                                     statusResult.ErrorCode.ToString() ??
                                     "Training failed"),
                                 stoppingToken);
                         }
-
-                        _logger.LogInformation(
+                        _logger.LogDebug(
                             "Model {ModelId} status updated to {Status}",
-                            trainedModel.Id,
+                            modelTraining.Id,
                             newStatus);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error checking status for model {ModelId}", trainedModel.Id);
+                        _logger.LogError(ex, "Error checking status for model {ModelId}", modelTraining.Id);
                     }
                 }
-
                 consecutiveErrors = 0;
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
@@ -130,19 +121,16 @@ public class ModelTrainingBackgroundService : BackgroundService
                     ex,
                     "Error in Model Training Background Service (Consecutive errors: {ErrorCount})",
                     consecutiveErrors);
-
                 if (consecutiveErrors >= MaxConsecutiveErrors)
                 {
                     _logger.LogCritical(
-                        "Reached maximum consecutive errors ({MaxErrors}). Stopping service.",
+                        "Reached maximum consecutive errors ({MaxErrors}). Stopping service",
                         MaxConsecutiveErrors);
                     break;
                 }
             }
-
             await Task.Delay(_checkInterval, stoppingToken);
         }
-
-        _logger.LogInformation("Model Training Background Service is stopping");
+        _logger.LogDebug("Model Training Background Service is stopping");
     }
 }
