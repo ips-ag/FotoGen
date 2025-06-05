@@ -118,6 +118,7 @@ module storageAccount 'storageAccount.bicep' = {
     location: location
     tags: tags
     daysSoftDelete: daysSoftDelete
+    keyVaultName: keyVault.name
   }
 }
 
@@ -214,6 +215,10 @@ resource apiWebAppConfig 'Microsoft.Web/sites/config@2024-04-01' = {
       {
         name: 'REPLICATE__OWNER'
         value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=Replicate--Owner)'
+      }
+      {
+        name: 'AZURESTORAGE__CONNECTIONSTRING'
+        value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${storageAccount.outputs.connectionStringSecretName})'
       }
       {
         name: 'SECURITY__AUTHENTICATION__AUTHORITY'
