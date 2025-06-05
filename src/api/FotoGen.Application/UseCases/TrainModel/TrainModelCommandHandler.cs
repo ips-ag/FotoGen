@@ -38,11 +38,11 @@ public class TrainModelCommandHandler : IRequestHandler<TrainModelCommand, BaseR
         }
         var user = (await _requestContextRepository.GetAsync()).User;
         string modelName = new ModelName(user);
-        var modelExists = await _replicateService.GetModelAsync(modelName);
-        if (modelExists is { IsSuccess: false, ErrorCode: ErrorCode.ReplicateModelNotFound })
+        var trainedModel = await _replicateService.GetTrainedModelByNameAsync(modelName, cancellationToken);
+        if (trainedModel is null)
         {
-            var createReplicateModelRequestDto = new CreateModelRequest(modelName);
-            var createModelResult = await _replicateService.CreateReplicateModelAsync(createReplicateModelRequestDto);
+            var createReplicateModelRequestDto = new CreateTrainedModelRequest(modelName);
+            var createModelResult = await _replicateService.CreateTrainedModelAsync(createReplicateModelRequestDto);
             if (!createModelResult.IsSuccess)
             {
                 return BaseResponse<TrainModelResponse>.Fail(ErrorCode.CreateReplicateModelFail);
@@ -50,7 +50,7 @@ public class TrainModelCommandHandler : IRequestHandler<TrainModelCommand, BaseR
         }
         string triggerWord = user.FirstName;
         var trainModelDto = new TrainModelRequest(modelName, request.InputImageUrl, triggerWord);
-        var trainModelResult = await _replicateService.TrainModelAsync(trainModelDto);
+        var trainModelResult = await _replicateService.CreateModelTrainingAsync(trainModelDto);
         if (!trainModelResult.IsSuccess)
         {
             return BaseResponse<TrainModelResponse>.Fail(ErrorCode.TrainReplicateModelFail);

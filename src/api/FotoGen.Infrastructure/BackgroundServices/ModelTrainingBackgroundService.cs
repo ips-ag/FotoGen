@@ -52,7 +52,7 @@ public class ModelTrainingBackgroundService : BackgroundService
                 {
                     try
                     {
-                        var statusResult = await replicateClient.GetTrainModelStatusAsync(modelTraining.Id);
+                        var statusResult = await replicateClient.GetModelTrainingStatusAsync(modelTraining.Id);
                         if (!statusResult.IsSuccess)
                         {
                             _logger.LogWarning(

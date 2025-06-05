@@ -8,6 +8,7 @@ using FotoGen.Infrastructure.AzureStorage;
 using FotoGen.Infrastructure.BackgroundServices;
 using FotoGen.Infrastructure.Email;
 using FotoGen.Infrastructure.Replicate;
+using FotoGen.Infrastructure.Replicate.Configuration;
 using FotoGen.Infrastructure.Replicate.GetTrainedModelStatus.Converters;
 using FotoGen.Infrastructure.Repositories;
 using FotoGen.Infrastructure.Repositories.Requests;

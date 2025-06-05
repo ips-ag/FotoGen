@@ -35,9 +35,9 @@ public class CheckUserModelAvailableQueryHandler : IRequestHandler<CheckUserMode
         var user = (await _requestContextRepository.GetAsync()).User;
         var ownerModelName = new ModelName(user);
         string modelName = request.ModelName?.ToLower() ?? ownerModelName;
-        var response = await _replicateService.GetModelAsync(modelName);
-        return response.IsSuccess
+        var trainedModel = await _replicateService.GetTrainedModelByNameAsync(modelName, cancellationToken);
+        return trainedModel?.CanTrain == true
             ? BaseResponse<bool>.Success(true)
-            : BaseResponse<bool>.Fail(response.ErrorCode.Value);
+            : BaseResponse<bool>.Fail(ErrorCode.ReplicateModelNotFound);
     }
 }

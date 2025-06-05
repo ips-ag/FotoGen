@@ -1,15 +1,18 @@
-using System.Net;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using FotoGen.Application.Interfaces;
 using FotoGen.Domain.Entities.Images;
 using FotoGen.Domain.Entities.Models;
 using FotoGen.Domain.Entities.Response;
-using FotoGen.Infrastructure.Replicate.CreateModel;
+using FotoGen.Infrastructure.Replicate.Configuration;
+using FotoGen.Infrastructure.Replicate.CreateModel.Converters;
+using FotoGen.Infrastructure.Replicate.GetTrainedModel.Converters;
+using FotoGen.Infrastructure.Replicate.GetTrainedModel.Models;
 using FotoGen.Infrastructure.Replicate.GetTrainedModelStatus;
 using FotoGen.Infrastructure.Replicate.TrainModel;
-using FotoGen.Infrastructure.Replicate.UseModel;
-using FotoGen.Infrastructure.Settings;
+using FotoGen.Infrastructure.Replicate.UseModel.Converters;
+using FotoGen.Infrastructure.Replicate.UseModel.Models;
 using Microsoft.Extensions.Options;
 using TrainModelResponse = FotoGen.Domain.Entities.Models.TrainModelResponse;
 
@@ -26,7 +29,7 @@ public class ReplicateService : IReplicateService
         _httpClient = httpClient;
     }
 
-    public async Task<BaseResponse<bool>> CreateReplicateModelAsync(CreateModelRequest dto)
+    public async Task<BaseResponse<bool>> CreateTrainedModelAsync(CreateTrainedModelRequest dto)
     {
         var requestModel = CreateModelMapper.ToRequest(dto, _replicateSetting);
         string json = JsonSerializer.Serialize(requestModel);
@@ -37,34 +40,39 @@ public class ReplicateService : IReplicateService
             : BaseResponse<bool>.Success(true);
     }
 
-    public async Task<BaseResponse<GenerateImageResponse>> GeneratePhotoAsync(string prompt, string modelName)
+    public async Task<BaseResponse<GenerateImageResponse>> GeneratePhotoAsync(
+        string prompt,
+        TrainedModel model,
+        CancellationToken cancel)
     {
-        var input = UseModelMapper.ToModel(prompt, modelName, _replicateSetting);
-        string json = JsonSerializer.Serialize(input);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var response = await _httpClient.PostAsync("predictions", content);
+        if (model.LatestVersion is null)
+        {
+            return BaseResponse<GenerateImageResponse>.Fail(ErrorCode.ReplicateModelNotFound);
+        }
+        var input = UseModelMapper.ToModel(prompt, model.LatestVersion);
+        var content = JsonContent.Create(input);
+        var response = await _httpClient.PostAsync("predictions", content, cancel);
         if (!response.IsSuccessStatusCode)
         {
             return BaseResponse<GenerateImageResponse>.Fail(ErrorCode.GeneratePhotoFail);
         }
-        string contentResponse = await response.Content.ReadAsStringAsync();
+        string contentResponse = await response.Content.ReadAsStringAsync(cancel);
         var responseModel = JsonSerializer.Deserialize<UseModelResponseModel>(contentResponse);
         return BaseResponse<GenerateImageResponse>.Success(UseModelMapper.ToDomain(responseModel));
     }
 
-    public async Task<BaseResponse<bool>> GetModelAsync(string name)
+    public async ValueTask<TrainedModel?> GetTrainedModelByNameAsync(string name, CancellationToken cancel)
     {
         var url = $"models/{_replicateSetting.Owner}/{name}";
-        var response = await _httpClient.GetAsync(url);
-        return response.IsSuccessStatusCode
-            ? BaseResponse<bool>.Success(true)
-            : BaseResponse<bool>.Fail(
-                response.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.Gone
-                    ? ErrorCode.ReplicateModelNotFound
-                    : ErrorCode.GetReplicateModelFail);
+        var response = await _httpClient.GetAsync(url, cancel);
+        if (!response.IsSuccessStatusCode) return null;
+        var responseModel = await response.Content.ReadFromJsonAsync<GetTrainedModelResponseModel>(cancel);
+        if (responseModel is null) return null;
+        var trainedModel = TrainedModelMapper.ToDomain(responseModel);
+        return trainedModel;
     }
 
-    public async Task<BaseResponse<QueryModelTrainingStatus>> GetTrainModelStatusAsync(string trainModelId)
+    public async Task<BaseResponse<QueryModelTrainingStatus>> GetModelTrainingStatusAsync(string trainModelId)
     {
         var getUrl = $"trainings/{trainModelId}";
         var response = await _httpClient.GetAsync(getUrl);
@@ -78,9 +86,10 @@ public class ReplicateService : IReplicateService
             GetTrainedModelStatusMapper.ToResponseDto(getTrainModelResponse));
     }
 
-    public async Task<BaseResponse<TrainModelResponse>> TrainModelAsync(TrainModelRequest request)
+    public async Task<BaseResponse<TrainModelResponse>> CreateModelTrainingAsync(TrainModelRequest request)
     {
-        var postUrl = $"models/{_replicateSetting.Model}/versions/{_replicateSetting.Version}/trainings";
+        var trainingSettings = _replicateSetting.Training;
+        var postUrl = $"models/{trainingSettings.Model}/versions/{trainingSettings.Version}/trainings";
         var requestModel = TrainModelMapper.ToRequest(request, _replicateSetting);
         string json = JsonSerializer.Serialize(requestModel);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
