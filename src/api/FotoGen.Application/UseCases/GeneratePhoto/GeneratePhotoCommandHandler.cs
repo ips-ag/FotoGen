@@ -43,7 +43,9 @@ public class GeneratePhotoCommandHandler : IRequestHandler<GeneratePhotoCommand,
             return BaseResponse<GeneratePhotoResponse>.Fail(ErrorCode.ReplicateModelNotFound);
         }
         string triggerWord = string.IsNullOrEmpty(request.TriggerWord) ? new TriggerWord(user) : request.TriggerWord;
-        string prompt = request.Prompt.Contains(triggerWord) ? request.Prompt : $"{triggerWord} {request.Prompt}";
+        string prompt = request.Prompt.Contains(triggerWord, StringComparison.OrdinalIgnoreCase)
+            ? request.Prompt
+            : $"{triggerWord} {request.Prompt}";
         var replicateResponse = await _replicateService.GeneratePhotoAsync(prompt, trainedModel, cancellationToken);
         if (!replicateResponse.IsSuccess) return BaseResponse<GeneratePhotoResponse>.Fail(ErrorCode.GeneratePhotoFail);
         byte[] bytesImage = await _downloadClient.GetByteArrayAsync(replicateResponse.Data.StreamUrl);
