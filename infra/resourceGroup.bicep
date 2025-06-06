@@ -34,6 +34,9 @@ param uiWebAppName string = 'app-${projectName}-ui-${env}'
 @description('Optional. The name of the API App Service to create.')
 param apiWebAppName string = 'app-${projectName}-api-${env}'
 
+@description('Optional. Custom command to start API App Service.')
+param apiCustomCommand string = 'dotnet FotoGen.Api.dll'
+
 @description('Optional. The name of the Storage Account to create.')
 param storageAccountName string = 'sto${projectName}${env}'
 
@@ -192,6 +195,8 @@ resource apiWebAppConfig 'Microsoft.Web/sites/config@2024-04-01' = {
   dependsOn: [apiWebApp, keyVaultSecretsUserRoleAssignment]
   properties: {
     linuxFxVersion: 'DOTNETCORE|9.0'
+    alwaysOn: true
+    appCommandLine: apiCustomCommand
     cors: {
       allowedOrigins: [uiWebApp.outputs.endpoint]
     }
