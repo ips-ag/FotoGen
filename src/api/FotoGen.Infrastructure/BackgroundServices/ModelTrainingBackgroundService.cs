@@ -27,11 +27,11 @@ public class ModelTrainingBackgroundService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogDebug("Model Training Background Service is starting");
+        _logger.LogInformation("Model Training Background Service is starting");
 
         var consecutiveErrors = 0;
 
-        while (!stoppingToken.IsCancellationRequested && consecutiveErrors < MaxConsecutiveErrors)
+        while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
@@ -117,10 +117,6 @@ public class ModelTrainingBackgroundService : BackgroundService
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 consecutiveErrors++;
-                _logger.LogError(
-                    ex,
-                    "Error in Model Training Background Service (Consecutive errors: {ErrorCount})",
-                    consecutiveErrors);
                 if (consecutiveErrors >= MaxConsecutiveErrors)
                 {
                     _logger.LogCritical(
@@ -128,9 +124,13 @@ public class ModelTrainingBackgroundService : BackgroundService
                         MaxConsecutiveErrors);
                     break;
                 }
+                _logger.LogError(
+                    ex,
+                    "Error in Model Training Background Service (Consecutive errors: {ErrorCount})",
+                    consecutiveErrors);
             }
             await Task.Delay(_checkInterval, stoppingToken);
         }
-        _logger.LogDebug("Model Training Background Service is stopping");
+        _logger.LogInformation("Model Training Background Service is stopping");
     }
 }
