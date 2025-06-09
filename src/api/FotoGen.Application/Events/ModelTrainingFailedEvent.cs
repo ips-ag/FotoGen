@@ -1,18 +1,18 @@
-using FotoGen.Domain.Events;
 using MediatR;
 
 namespace FotoGen.Application.Events;
 
-public class ModelTrainingFailedEvent : BaseModelTrainingEvent, INotification
+public class ModelTrainingFailedEvent : INotification
 {
+    public string UserEmail { get; }
+    public string ModelName { get; }
     public string Error { get; }
 
-    public ModelTrainingFailedEvent(string id, string model, string version, string userEmail, string error)
+
+    public ModelTrainingFailedEvent(string userEmail, string modelName, string error)
     {
-        Id = id;
-        Model = model;
-        Version = version;
         UserEmail = userEmail;
+        ModelName = modelName;
         Error = error;
     }
 }

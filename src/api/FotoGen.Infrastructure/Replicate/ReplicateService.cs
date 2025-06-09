@@ -58,7 +58,9 @@ public class ReplicateService : IReplicateService
         }
         string contentResponse = await response.Content.ReadAsStringAsync(cancel);
         var responseModel = JsonSerializer.Deserialize<UseModelResponseModel>(contentResponse);
-        return BaseResponse<GenerateImageResponse>.Success(UseModelMapper.ToDomain(responseModel));
+        return responseModel is null
+            ? BaseResponse<GenerateImageResponse>.Fail(ErrorCode.GeneratePhotoFail)
+            : BaseResponse<GenerateImageResponse>.Success(UseModelMapper.ToDomain(responseModel));
     }
 
     public async ValueTask<TrainedModel?> GetTrainedModelByNameAsync(string name, CancellationToken cancel)
@@ -82,8 +84,10 @@ public class ReplicateService : IReplicateService
         }
         string contentResponse = await response.Content.ReadAsStringAsync();
         var getTrainModelResponse = JsonSerializer.Deserialize<GetTrainedModelStatusResponse>(contentResponse);
-        return BaseResponse<QueryModelTrainingStatus>.Success(
-            GetTrainedModelStatusMapper.ToResponseDto(getTrainModelResponse));
+        return getTrainModelResponse is null
+            ? BaseResponse<QueryModelTrainingStatus>.Fail(ErrorCode.GetReplicateTrainModelFail)
+            : BaseResponse<QueryModelTrainingStatus>.Success(
+                GetTrainedModelStatusMapper.ToResponseDto(getTrainModelResponse));
     }
 
     public async Task<BaseResponse<TrainModelResponse>> CreateModelTrainingAsync(TrainModelRequest request)
@@ -100,6 +104,8 @@ public class ReplicateService : IReplicateService
         }
         string contentResponse = await response.Content.ReadAsStringAsync();
         var trainModelResponse = JsonSerializer.Deserialize<TrainModelResponseModel>(contentResponse);
-        return BaseResponse<TrainModelResponse>.Success(TrainModelMapper.ToResponseDto(trainModelResponse));
+        return trainModelResponse is null
+            ? BaseResponse<TrainModelResponse>.Fail(ErrorCode.CreateReplicateModelFail)
+            : BaseResponse<TrainModelResponse>.Success(TrainModelMapper.ToResponseDto(trainModelResponse));
     }
 }

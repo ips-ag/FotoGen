@@ -28,9 +28,9 @@ public class ModelTrainingSucceededEventHandler : INotificationHandler<ModelTrai
         string appUrl = _appSettings.Host;
         var shareUrl = $"{appUrl}/model/{notification.UserName}/{notification.ModelName}";
         await _emailService.SendTrainingCompletedEmailAsync(
-            notification.UserEmail,
-            notification.Model,
-            appUrl,
-            shareUrl);
+            email: notification.UserEmail,
+            modelName: notification.ModelName,
+            appUrl: appUrl,
+            shareUrl: shareUrl);
     }
 }
