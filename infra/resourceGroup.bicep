@@ -233,6 +233,10 @@ resource apiWebAppConfig 'Microsoft.Web/sites/config@2024-04-01' = {
         name: 'SECURITY__AUTHENTICATION__AUDIENCE'
         value: '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=Authentication--Audience)'
       }
+      {
+        name: 'APP__HOST'
+        value: uiWebApp.outputs.endpoint
+      }
     ]
   }
 }
