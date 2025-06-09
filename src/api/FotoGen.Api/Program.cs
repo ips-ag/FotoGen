@@ -15,7 +15,7 @@ builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddCustomApiVersioning();
 builder.Services.AddSwaggerGenRespectingCustomApiVersioning();
-builder.Services.ConfigureOpenTelemetry(builder.Environment);
+builder.ConfigureOpenTelemetry();
 builder.Services.ConfigureAuthentication();
 builder.Services.ConfigureAuthorization();
 builder.Services.ConfigureCors();
