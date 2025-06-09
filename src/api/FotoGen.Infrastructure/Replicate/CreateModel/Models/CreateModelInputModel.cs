@@ -14,7 +14,7 @@ public class CreateModelInputModel
     public string? Description { get; set; }
 
     [JsonPropertyName("visibility")]
-    public string Visibility { get; set; }
+    public string? Visibility { get; set; }
 
     [JsonPropertyName("hardware")]
     public string? Hardware { get; set; }
