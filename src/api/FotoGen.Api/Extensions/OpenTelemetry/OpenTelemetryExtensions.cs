@@ -18,7 +18,7 @@ internal static class OpenTelemetryExtensions
         if (ConfigurationKeys.All(key =>
             {
                 var value = builder.Configuration.GetValue<string>(key);
-                return !string.IsNullOrEmpty(value);
+                return string.IsNullOrEmpty(value);
             }))
         {
             // no connection string provided, skip OpenTelemetry configuration
