@@ -82,24 +82,18 @@ public class ModelTrainingBackgroundService : BackgroundService
                         {
                             await mediator.Publish(
                                 new ModelTrainingSucceededEvent(
-                                    trainedModelResult.Id,
-                                    trainedModelResult.Model,
-                                    trainedModelResult.Version,
-                                    modelTraining.UserEmail,
-                                    modelTraining.UserName,
-                                    modelTraining.ModelName),
+                                    userEmail: modelTraining.UserEmail,
+                                    modelName: modelTraining.ModelName,
+                                    userName: modelTraining.UserName),
                                 stoppingToken);
                         }
                         else if (newStatus == ModelTrainingStatus.Failed)
                         {
                             await mediator.Publish(
                                 new ModelTrainingFailedEvent(
-                                    trainedModelResult.Id,
-                                    trainedModelResult.Model,
-                                    trainedModelResult.Version,
-                                    modelTraining.UserEmail,
-                                    statusResult.ErrorCode.ToString() ??
-                                    "Training failed"),
+                                    userEmail: modelTraining.UserEmail,
+                                    modelName: modelTraining.ModelName,
+                                    error: statusResult.ErrorCode.ToString() ?? "Training failed"),
                                 stoppingToken);
                         }
                         _logger.LogDebug(

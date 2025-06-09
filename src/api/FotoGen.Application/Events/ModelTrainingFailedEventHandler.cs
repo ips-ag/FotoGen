@@ -19,10 +19,13 @@ public class ModelTrainingFailedEventHandler : INotificationHandler<ModelTrainin
 
     public async Task Handle(ModelTrainingFailedEvent notification, CancellationToken cancellationToken)
     {
-        _logger.LogError($"Model training failed: {notification.Model}. Error: {notification.Error}");
-        await _emailService.SendTrainingFailedEmailAsync(
-            notification.UserEmail,
-            notification.Model,
+        _logger.LogError(
+            "Model training failed: {ModelName}. Error: {Error}",
+            notification.ModelName,
             notification.Error);
+        await _emailService.SendTrainingFailedEmailAsync(
+            email: notification.UserEmail,
+            modelName: notification.ModelName,
+            error: notification.Error);
     }
 }
