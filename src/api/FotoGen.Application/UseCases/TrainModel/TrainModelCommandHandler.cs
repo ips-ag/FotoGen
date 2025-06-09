@@ -1,6 +1,5 @@
 using FluentValidation;
 using FotoGen.Application.Interfaces;
-using FotoGen.Domain.Entities;
 using FotoGen.Domain.Entities.Models;
 using FotoGen.Domain.Entities.Response;
 using FotoGen.Domain.Repositories;
@@ -48,9 +47,9 @@ public class TrainModelCommandHandler : IRequestHandler<TrainModelCommand, BaseR
                 return BaseResponse<TrainModelResponse>.Fail(ErrorCode.CreateReplicateModelFail);
             }
         }
-        string triggerWord = user.FirstName;
-        var trainModelDto = new TrainModelRequest(modelName, request.InputImageUrl, triggerWord);
-        var trainModelResult = await _replicateService.CreateModelTrainingAsync(trainModelDto);
+        string triggerWord = new TriggerWord(user);
+        var trainModelRequest = new TrainModelRequest(modelName, request.InputImageUrl, triggerWord);
+        var trainModelResult = await _replicateService.CreateModelTrainingAsync(trainModelRequest);
         if (!trainModelResult.IsSuccess)
         {
             return BaseResponse<TrainModelResponse>.Fail(ErrorCode.TrainReplicateModelFail);
@@ -59,7 +58,7 @@ public class TrainModelCommandHandler : IRequestHandler<TrainModelCommand, BaseR
             Id: trainModelResult.Data.Id,
             ModelName: modelName,
             UserEmail: user.Email,
-            UserName: user.FirstName,
+            UserName: user.FullName,
             ImageUrl: request.InputImageUrl,
             TriggerWord: triggerWord,
             TrainingStatus: ModelTrainingStatus.InProgress,
