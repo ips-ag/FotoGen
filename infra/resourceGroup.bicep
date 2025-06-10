@@ -31,6 +31,9 @@ param appServicePlanSku string = 'B1'
 @description('Optional. The name of the UI App Service to create.')
 param uiWebAppName string = 'app-${projectName}-ui-${env}'
 
+@description('Optional. Custom command to start UI App Service.')
+param uiCustomCommand string = 'pm2 serve /home/site/wwwroot 8080 --spa --no-daemon'
+
 @description('Optional. The name of the API App Service to create.')
 param apiWebAppName string = 'app-${projectName}-api-${env}'
 
@@ -187,6 +190,15 @@ resource keyVaultSecretsUserRoleAssignment 'Microsoft.Authorization/roleAssignme
     ) // Key Vault Secrets User
     principalId: apiWebApp.outputs.principalId
     principalType: 'ServicePrincipal'
+  }
+}
+
+resource uiWebAppConfig 'Microsoft.Web/sites/config@2024-04-01' = {
+  name: '${apiWebAppName}/web'
+  dependsOn: [apiWebApp, keyVaultSecretsUserRoleAssignment]
+  properties: {
+    linuxFxVersion: 'NODE|22-lts'
+    appCommandLine: uiCustomCommand
   }
 }
 
