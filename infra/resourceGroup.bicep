@@ -194,8 +194,7 @@ resource keyVaultSecretsUserRoleAssignment 'Microsoft.Authorization/roleAssignme
 }
 
 resource uiWebAppConfig 'Microsoft.Web/sites/config@2024-04-01' = {
-  name: '${apiWebAppName}/web'
-  dependsOn: [apiWebApp, keyVaultSecretsUserRoleAssignment]
+  name: '${uiWebApp.name}/web'
   properties: {
     linuxFxVersion: 'NODE|22-lts'
     appCommandLine: uiCustomCommand
@@ -203,8 +202,8 @@ resource uiWebAppConfig 'Microsoft.Web/sites/config@2024-04-01' = {
 }
 
 resource apiWebAppConfig 'Microsoft.Web/sites/config@2024-04-01' = {
-  name: '${apiWebAppName}/web'
-  dependsOn: [apiWebApp, keyVaultSecretsUserRoleAssignment]
+  name: '${apiWebApp.name}/web'
+  dependsOn: [keyVaultSecretsUserRoleAssignment]
   properties: {
     linuxFxVersion: 'DOTNETCORE|9.0'
     alwaysOn: true
