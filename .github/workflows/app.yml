@@ -6,8 +6,10 @@ on:
       - main
     paths:
       - src/app/**
+      - src/app
+      - .gitmodules
       - .github/workflows/app.yml
-  workflow_dispatch:    
+  workflow_dispatch:
 
 jobs:
   build:
