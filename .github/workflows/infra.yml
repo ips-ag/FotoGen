@@ -34,7 +34,7 @@ jobs:
       - name: Deploy Bicep template
         uses: azure/cli@v2
         with:
-          azcliversion: 2.72
+          azcliversion: 2.72.0
           inlineScript: |
             az deployment sub create \
               --name "dep-${{ secrets.PROJECT_NAME }}-dev" \
