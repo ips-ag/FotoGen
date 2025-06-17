@@ -13,8 +13,8 @@ param adminObjectId string
 @description('Optional. Resource location. Defaults to resource group location')
 param location string = resourceGroup().location
 
-@description('Optional. Resource tags. Defaults to resource group tags.')
-param tags object = resourceGroup().tags
+// @description('Optional. Resource tags. Defaults to resource group tags.')
+// param tags object = resourceGroup().tags
 
 @description('Optional. The minimal TLS version for the SQL server.')
 @allowed([
@@ -39,7 +39,7 @@ resource server 'Microsoft.Sql/servers@2024-05-01-preview' = {
   }
   location: location
   name: serverName
-  tags: tags
+  // tags: tags
   properties: {
     administrators: {
       administratorType: 'ActiveDirectory'
@@ -77,13 +77,6 @@ resource server 'Microsoft.Sql/servers@2024-05-01-preview' = {
     }
   }
 
-  resource keys 'keys' = {
-    name: 'ServiceManaged'
-    properties: {
-      serverKeyType: 'ServiceManaged'
-    }
-  }
-
   resource securityAlertPolicies 'securityAlertPolicies' = {
     name: 'Default'
     properties: {
@@ -98,24 +91,13 @@ resource server 'Microsoft.Sql/servers@2024-05-01-preview' = {
       retentionDays: 0
     }
   }
-
-  resource vulnerabilityAssessments 'vulnerabilityAssessments' = {
-    name: 'Default'
-    properties: {
-      recurringScans: {
-        isEnabled: false
-        emailSubscriptionAdmins: true
-      }
-      storageContainerPath: ''
-    }
-  }
 }
 
 resource database 'Microsoft.Sql/servers/databases@2024-05-01-preview' = {
   parent: server
   name: databaseName
   location: location
-  tags: tags
+  // tags: tags
   sku: {
     name: 'GP_S_Gen5'
     tier: 'GeneralPurpose'
@@ -143,13 +125,6 @@ resource database 'Microsoft.Sql/servers/databases@2024-05-01-preview' = {
     }
   }
 
-  resource transparentDataEncryption 'transparentDataEncryption' = {
-    name: 'Default'
-    properties: {
-      state: 'Disabled'
-    }
-  }
-
   resource vulnerabilityAssessments 'vulnerabilityAssessments' = {
     name: 'Default'
     properties: {
@@ -157,16 +132,6 @@ resource database 'Microsoft.Sql/servers/databases@2024-05-01-preview' = {
         emailSubscriptionAdmins: true
         isEnabled: false
       }
-    }
-  }
-
-  resource backupLongTermRetentionPolicies 'backupLongTermRetentionPolicies' = {
-    name: 'default'
-    properties: {
-      weeklyRetention: 'PT0S'
-      monthlyRetention: 'PT0S'
-      yearlyRetention: 'PT0S'
-      weekOfYear: 0
     }
   }
 
