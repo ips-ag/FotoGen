@@ -5,7 +5,6 @@ using Azure.Data.Tables;
 using Azure.Storage.Blobs;
 using FotoGen.Application.Interfaces;
 using FotoGen.Domain.Repositories;
-using FotoGen.Domain.Settings;
 using FotoGen.Infrastructure.AzureStorage;
 using FotoGen.Infrastructure.BackgroundServices;
 using FotoGen.Infrastructure.Email;
@@ -27,10 +26,6 @@ public static class InfrastructureDI
         services.AddScoped<IReplicateService, ReplicateService>();
         services.AddOptions<ReplicateSetting>()
             .BindConfiguration(ReplicateSetting.SectionName)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-        services.AddOptions<UserUsageLimitationInDaySettings>()
-            .BindConfiguration(UserUsageLimitationInDaySettings.SectionName)
             .ValidateDataAnnotations()
             .ValidateOnStart();
         services.AddOptions<ModelTrainingSettings>()
@@ -90,7 +85,6 @@ public static class InfrastructureDI
         services.AddSingleton<RequestContextAccessor>();
         services.AddSingleton<RequestContextFactory>();
         services.AddScoped<IRequestContextRepository, RequestContextRepository>();
-
         return services;
     }
 }

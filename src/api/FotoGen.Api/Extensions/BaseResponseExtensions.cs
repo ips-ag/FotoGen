@@ -8,12 +8,19 @@ public static class BaseResponseExtensions
     public static IActionResult ToActionResult<T>(this BaseResponse<T> response)
     {
         if (response.IsSuccess) return new OkObjectResult(response);
-
-        return response.ErrorCode switch
+        if (!Enum.TryParse<ErrorCode>(response.ErrorCode, out var errorCode))
+        {
+            return new ObjectResult(response) { StatusCode = StatusCodes.Status500InternalServerError };
+        }
+        return errorCode switch
         {
             ErrorCode.Validation => new BadRequestObjectResult(response),
             ErrorCode.UnauthorizedAccess => new UnauthorizedObjectResult(response),
             ErrorCode.Forbidden => new ObjectResult(response) { StatusCode = StatusCodes.Status403Forbidden },
+
+            //BadRequest
+            ErrorCode.ReachPhotoGenerationLimitation => new ObjectResult(response) { StatusCode = StatusCodes.Status400BadRequest },
+            ErrorCode.ReachTrainingLimitation => new ObjectResult(response) { StatusCode = StatusCodes.Status400BadRequest },
 
             //Not found
             ErrorCode.ReplicateModelNotFound => new ObjectResult(response) { StatusCode = StatusCodes.Status404NotFound },

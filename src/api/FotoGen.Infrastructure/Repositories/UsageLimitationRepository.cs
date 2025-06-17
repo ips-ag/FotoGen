@@ -1,3 +1,4 @@
+using Azure;
 using Azure.Data.Tables;
 using FotoGen.Domain.Entities.Models;
 using FotoGen.Domain.Repositories;
@@ -14,9 +15,17 @@ namespace FotoGen.Infrastructure.Repositories
         }
         public async Task<UserUsage?> GetUserUsageAsync(string userId, DateOnly date)
         {
-            var response = await _tableClient.GetEntityAsync<TableEntity>(userId, date.ToString("yyyy-MM-dd"));
-            return MapTableEntityToUserUsage(response.Value);
-           
+            try
+            {
+                var response = await _tableClient.GetEntityAsync<TableEntity>(
+                    partitionKey: userId,
+                    rowKey: date.ToString("yyyy-MM-dd"));
+                return MapTableEntityToUserUsage(response.Value);
+            }
+            catch (RequestFailedException ex) when (ex.Status == 404)
+            {
+                return null;
+            }
         }
         private TableEntity MapUserUsageToTableEntity(UserUsage userUsage)
         {

@@ -1,11 +1,10 @@
 using FluentValidation;
 using FotoGen.Application.Interfaces;
+using FotoGen.Domain.Consts;
 using FotoGen.Domain.Entities.Models;
 using FotoGen.Domain.Entities.Response;
 using FotoGen.Domain.Repositories;
-using FotoGen.Domain.Settings;
 using MediatR;
-using Microsoft.Extensions.Options;
 
 namespace FotoGen.Application.UseCases.GeneratePhoto;
 
@@ -16,7 +15,6 @@ public class GeneratePhotoCommandHandler : IRequestHandler<GeneratePhotoCommand,
     private readonly IRequestContextRepository _requestContextRepository;
     private readonly IUsageLimitationRepository _usageLimitationRepository;
     private readonly IValidator<GeneratePhotoCommand> _validator;
-    private readonly UserUsageLimitationInDaySettings _userUsageLimitation;
 
     public GeneratePhotoCommandHandler(
         
@@ -24,15 +22,13 @@ public class GeneratePhotoCommandHandler : IRequestHandler<GeneratePhotoCommand,
         IDownloadClient downloadClient,
         IValidator<GeneratePhotoCommand> validator,
         IRequestContextRepository requestContextRepository,
-        IUsageLimitationRepository usageLimitationRepository,
-        IOptions<UserUsageLimitationInDaySettings> options)
+        IUsageLimitationRepository usageLimitationRepository)
     {
         _replicateService = replicateService;
         _downloadClient = downloadClient;
         _validator = validator;
         _requestContextRepository = requestContextRepository;
         _usageLimitationRepository = usageLimitationRepository;
-        _userUsageLimitation = options.Value;
     }
 
     public async Task<BaseResponse<GeneratePhotoResponse>> Handle(
@@ -46,7 +42,7 @@ public class GeneratePhotoCommandHandler : IRequestHandler<GeneratePhotoCommand,
         }
         var user = (await _requestContextRepository.GetAsync()).User;
         var userUsage = await _usageLimitationRepository.GetUserUsageAsync(user.Id, DateOnly.FromDateTime(DateTime.UtcNow));
-        if (userUsage.PhotoGenerationCount > _userUsageLimitation.PhotoGeneration) return BaseResponse<GeneratePhotoResponse>.Fail(ErrorCode.ReachPhotoGenerationLimitation);
+        if (userUsage?.PhotoGenerationCount > ConstValue.LimitPhotoGenerationUsageInDay) return BaseResponse<GeneratePhotoResponse>.Fail(ErrorCode.ReachPhotoGenerationLimitation);
         string modelName = string.IsNullOrEmpty(request.ModelName) ? new ModelName(user) : request.ModelName.ToLower();
         var trainedModel = await _replicateService.GetTrainedModelByNameAsync(modelName, cancellationToken);
         if (trainedModel?.CanTrain != true) return BaseResponse<GeneratePhotoResponse>.Fail(ErrorCode.ReplicateModelNotFound);
