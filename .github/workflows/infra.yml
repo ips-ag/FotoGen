@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - feature/sql-server-bicep
     paths:
       - infra/**
       - .github/workflows/infra.yml
@@ -32,4 +33,4 @@ jobs:
 
       - name: Deploy Bicep template
         run: |
-          az deployment sub create --name dep-${{ secrets.PROJECT_NAME }}-dev --location swedencentral --template-file ./infra/main.bicep --parameters environment=Dev projectName=${{ secrets.PROJECT_NAME }}
+          az deployment sub create --name dep-${{ secrets.PROJECT_NAME }}-dev --location swedencentral --template-file ./infra/main.bicep --parameters environment=Dev projectName=${{ secrets.PROJECT_NAME }} sqlAdminLogin=${{ secrets.SQL_ADMIN_LOGIN }} sqlAdminObjectId=${{ secrets.SQL_ADMIN_OBJECTID }} sqlServerName=${{ secrets.SQL_SERVER_NAME }} sqlDatabaseName=${{ secrets.SQL_DATABASE_NAME }} sqlElasticPoolName=${{ secrets.SQL_ELASTIC_POOL_NAME }} sqlElasticPoolSku=${{ secrets.SQL_ELASTIC_POOL_SKU }} sqlElasticPoolMaxSize=${{ secrets.SQL_ELASTIC_POOL_MAX_SIZE }} sqlElasticPoolMinSize=${{ secrets.SQL_ELASTIC_POOL_MIN_SIZE }}

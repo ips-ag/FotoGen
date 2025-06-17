@@ -46,6 +46,18 @@ param storageAccountName string = 'sto${projectName}${env}'
 @description('Optional. The name of the Key Vault to create.')
 param keyVaultName string = 'kv-${projectName}-${env}'
 
+@description('Optional. The name of the Key Vault to create.')
+param sqlServerName string = 'sql-${projectName}-${env}'
+
+@description('Optional. The name of the SQL Database to create.')
+param sqlDatabaseName string = 'sqldb-${projectName}-${env}'
+
+@description('Required. SQL server administrator login.')
+param sqlAdminLogin string
+
+@description('Required. SQL server administrator Object Id.')
+param sqlAdminObjectId string
+
 @description('Optional. Indicates number fo days to retain deleted items (containers, blobs, snapshosts, versions). Default value is 7')
 param daysSoftDelete int = 7
 
@@ -125,6 +137,16 @@ module storageAccount 'storageAccount.bicep' = {
     tags: tags
     daysSoftDelete: daysSoftDelete
     keyVaultName: keyVault.name
+  }
+}
+
+module sqlServer 'sqlServer.bicep' = {
+  name: sqlServerName
+  params: {
+    serverName: sqlServerName
+    databaseName: sqlDatabaseName
+    adminLogin: sqlAdminLogin
+    adminObjectId: sqlAdminObjectId
   }
 }
 
