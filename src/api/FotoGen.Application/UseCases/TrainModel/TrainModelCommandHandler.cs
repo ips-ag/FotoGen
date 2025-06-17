@@ -39,7 +39,7 @@ public class TrainModelCommandHandler : IRequestHandler<TrainModelCommand, BaseR
         if (!validationResult.IsValid) return BaseResponse<TrainModelResponse>.Fail(validationResult.ToDictionary());
         var user = (await _requestContextRepository.GetAsync()).User;
         var userUsage = await _usageLimitationRepository.GetUserUsageAsync(user.Id, DateOnly.FromDateTime(DateTime.UtcNow));
-        if(userUsage?.TrainingCount > ConstValue.LimitTrainingUsageInDay) return BaseResponse<TrainModelResponse>.Fail(ErrorCode.ReachTrainingLimitation);
+        if(userUsage?.TrainingCount >= ConstValue.LimitTrainingUsageInDay) return BaseResponse<TrainModelResponse>.Fail(ErrorCode.ReachTrainingLimitation);
         string modelName = new ModelName(user);
         var trainedModel = await _replicateService.GetTrainedModelByNameAsync(modelName, cancellationToken);
         if (trainedModel is null)

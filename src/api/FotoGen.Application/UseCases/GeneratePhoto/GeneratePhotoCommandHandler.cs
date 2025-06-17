@@ -42,7 +42,7 @@ public class GeneratePhotoCommandHandler : IRequestHandler<GeneratePhotoCommand,
         }
         var user = (await _requestContextRepository.GetAsync()).User;
         var userUsage = await _usageLimitationRepository.GetUserUsageAsync(user.Id, DateOnly.FromDateTime(DateTime.UtcNow));
-        if (userUsage?.PhotoGenerationCount > ConstValue.LimitPhotoGenerationUsageInDay) return BaseResponse<GeneratePhotoResponse>.Fail(ErrorCode.ReachPhotoGenerationLimitation);
+        if (userUsage?.PhotoGenerationCount >= ConstValue.LimitPhotoGenerationUsageInDay) return BaseResponse<GeneratePhotoResponse>.Fail(ErrorCode.ReachPhotoGenerationLimitation);
         string modelName = string.IsNullOrEmpty(request.ModelName) ? new ModelName(user) : request.ModelName.ToLower();
         var trainedModel = await _replicateService.GetTrainedModelByNameAsync(modelName, cancellationToken);
         if (trainedModel?.CanTrain != true) return BaseResponse<GeneratePhotoResponse>.Fail(ErrorCode.ReplicateModelNotFound);
