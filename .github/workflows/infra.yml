@@ -34,10 +34,10 @@ jobs:
       - name: Deploy Bicep template
         run: |
           az deployment sub create \
-            --name dep-${{ secrets.PROJECT_NAME }}-dev \
-            --location swedencentral \
-            --template-file ./infra/main.bicep \
-            --parameters environment=Dev \
-                        projectName=${{ secrets.PROJECT_NAME }} \
-                        sqlAdminLogin=${{ secrets.SQL_ADMIN_LOGIN }} \
-                        sqlAdminObjectId=${{ secrets.SQL_ADMIN_OBJECTID }}
+            --name "dep-${{ secrets.PROJECT_NAME }}-dev" \
+            --location "swedencentral" \
+            --template-file "./infra/main.bicep" \
+            --parameters environment="Dev" \
+                        projectName="${{ secrets.PROJECT_NAME }}" \
+                        sqlAdminLogin="${{ secrets.SQL_ADMIN_LOGIN }}" \
+                        sqlAdminObjectId="${{ secrets.SQL_ADMIN_OBJECTID }}"

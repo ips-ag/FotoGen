@@ -20,6 +20,12 @@ param location string = 'swedencentral'
 @description('Optional. Resource Group tags.')
 param tags object = {}
 
+@description('Required. SQL server administrator login.')
+param sqlAdminLogin string
+
+@description('Required. SQL server administrator Object Id.')
+param sqlAdminObjectId string
+
 var env = toLower(environment)
 var deploymentName = deployment().name
 
@@ -35,5 +41,7 @@ module rg 'resourceGroup.bicep' = {
     env: env
     projectName: toLower(projectName)
     tags: tags
+    sqlAdminLogin: sqlAdminLogin
+    sqlAdminObjectId: sqlAdminObjectId
   }
 }
