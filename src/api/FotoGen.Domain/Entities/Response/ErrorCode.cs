@@ -11,5 +11,7 @@ public enum ErrorCode
     GetReplicateModelFail,
     TrainReplicateModelFail,
     ImageGenerationResponseEmpty,
-    ReplicateModelNotFound
+    ReplicateModelNotFound,
+    ReachTrainingLimitation,
+    ReachPhotoGenerationLimitation
 }

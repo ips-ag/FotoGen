@@ -1,9 +1,11 @@
 using System.Net;
 using System.Net.Http.Headers;
 using Azure.Communication.Email;
+using Azure.Data.Tables;
 using Azure.Storage.Blobs;
 using FotoGen.Application.Interfaces;
 using FotoGen.Domain.Repositories;
+using FotoGen.Domain.Settings;
 using FotoGen.Infrastructure.AzureStorage;
 using FotoGen.Infrastructure.BackgroundServices;
 using FotoGen.Infrastructure.Email;
@@ -25,6 +27,10 @@ public static class InfrastructureDI
         services.AddScoped<IReplicateService, ReplicateService>();
         services.AddOptions<ReplicateSetting>()
             .BindConfiguration(ReplicateSetting.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        services.AddOptions<UserUsageLimitationInDaySettings>()
+            .BindConfiguration(UserUsageLimitationInDaySettings.SectionName)
             .ValidateDataAnnotations()
             .ValidateOnStart();
         services.AddOptions<ModelTrainingSettings>()
@@ -71,8 +77,14 @@ public static class InfrastructureDI
             var settings = provider.GetRequiredService<IOptions<AzureStorageSettings>>().Value;
             return new BlobServiceClient(settings.ConnectionString);
         });
+        services.AddScoped(provider =>
+        {
+            var settings = provider.GetRequiredService<IOptions<AzureStorageSettings>>().Value;
+            return new TableClient(settings.ConnectionString, settings.TableName);
+        });
         services.AddScoped<IAzureStorageService, AzureStorageService>();
         services.AddHostedService<ModelTrainingBackgroundService>();
+        services.AddScoped<IUsageLimitationRepository, UsageLimitationRepository>();
 
         // request context
         services.AddSingleton<RequestContextAccessor>();

@@ -3,7 +3,9 @@ using FotoGen.Application.Interfaces;
 using FotoGen.Domain.Entities.Models;
 using FotoGen.Domain.Entities.Response;
 using FotoGen.Domain.Repositories;
+using FotoGen.Domain.Settings;
 using MediatR;
+using Microsoft.Extensions.Options;
 
 namespace FotoGen.Application.UseCases.TrainModel;
 
@@ -12,18 +14,24 @@ public class TrainModelCommandHandler : IRequestHandler<TrainModelCommand, BaseR
     private readonly IReplicateService _replicateService;
     private readonly IModelTrainingRepository _modelTrainingRepository;
     private readonly IRequestContextRepository _requestContextRepository;
+    private readonly IUsageLimitationRepository _usageLimitationRepository;
     private readonly IValidator<TrainModelCommand> _validator;
+    private readonly UserUsageLimitationInDaySettings _userUsageLimitation;
 
     public TrainModelCommandHandler(
         IReplicateService replicateService,
         IModelTrainingRepository modelTrainingRepository,
         IValidator<TrainModelCommand> validator,
-        IRequestContextRepository requestContextRepository)
+        IRequestContextRepository requestContextRepository,
+        IUsageLimitationRepository usageLimitationRepository,
+        IOptions<UserUsageLimitationInDaySettings> options)
     {
         _replicateService = replicateService;
         _modelTrainingRepository = modelTrainingRepository;
         _validator = validator;
         _requestContextRepository = requestContextRepository;
+        _usageLimitationRepository = usageLimitationRepository;
+        _userUsageLimitation = options.Value;
     }
 
     public async Task<BaseResponse<TrainModelResponse>> Handle(
@@ -31,29 +39,22 @@ public class TrainModelCommandHandler : IRequestHandler<TrainModelCommand, BaseR
         CancellationToken cancellationToken)
     {
         var validationResult = await _validator.ValidateAsync(request, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return BaseResponse<TrainModelResponse>.Fail(validationResult.ToDictionary());
-        }
+        if (!validationResult.IsValid) return BaseResponse<TrainModelResponse>.Fail(validationResult.ToDictionary());
         var user = (await _requestContextRepository.GetAsync()).User;
+        var userUsage = await _usageLimitationRepository.GetUserUsageAsync(user.Id, DateOnly.FromDateTime(DateTime.UtcNow));
+        if(userUsage.TrainingCount > _userUsageLimitation.Training) return BaseResponse<TrainModelResponse>.Fail(ErrorCode.ReachTrainingLimitation);
         string modelName = new ModelName(user);
         var trainedModel = await _replicateService.GetTrainedModelByNameAsync(modelName, cancellationToken);
         if (trainedModel is null)
         {
             var createReplicateModelRequestDto = new CreateTrainedModelRequest(modelName);
             var createModelResult = await _replicateService.CreateTrainedModelAsync(createReplicateModelRequestDto);
-            if (!createModelResult.IsSuccess)
-            {
-                return BaseResponse<TrainModelResponse>.Fail(ErrorCode.CreateReplicateModelFail);
-            }
+            if (!createModelResult.IsSuccess) return BaseResponse<TrainModelResponse>.Fail(ErrorCode.CreateReplicateModelFail);
         }
         string triggerWord = new TriggerWord(user);
         var trainModelRequest = new TrainModelRequest(modelName, request.InputImageUrl, triggerWord);
         var trainModelResult = await _replicateService.CreateModelTrainingAsync(trainModelRequest);
-        if (!trainModelResult.IsSuccess)
-        {
-            return BaseResponse<TrainModelResponse>.Fail(ErrorCode.TrainReplicateModelFail);
-        }
+        if (!trainModelResult.IsSuccess) return BaseResponse<TrainModelResponse>.Fail(ErrorCode.TrainReplicateModelFail);
         var modelTraining = new ModelTraining(
             Id: trainModelResult.Data.Id,
             ModelName: modelName,
@@ -69,6 +70,9 @@ public class TrainModelCommandHandler : IRequestHandler<TrainModelCommand, BaseR
             trainModelResult.Data.Id,
             trainModelResult.Data.Status,
             trainModelResult.Data.CancelUrl);
+        userUsage ??= new UserUsage(user);
+        userUsage.TrainingCount++;
+        await _usageLimitationRepository.UpSetAsync(userUsage);
         return BaseResponse<TrainModelResponse>.Success(result);
     }
 }
