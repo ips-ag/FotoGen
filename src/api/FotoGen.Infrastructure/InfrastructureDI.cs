@@ -13,6 +13,8 @@ using FotoGen.Infrastructure.Replicate.GetTrainedModelStatus.Converters;
 using FotoGen.Infrastructure.Repositories;
 using FotoGen.Infrastructure.Repositories.Requests;
 using FotoGen.Infrastructure.Settings;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -20,7 +22,7 @@ namespace FotoGen.Infrastructure;
 
 public static class InfrastructureDI
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services)
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IReplicateService, ReplicateService>();
         services.AddOptions<ReplicateSetting>()
@@ -78,7 +80,8 @@ public static class InfrastructureDI
         services.AddSingleton<RequestContextAccessor>();
         services.AddSingleton<RequestContextFactory>();
         services.AddScoped<IRequestContextRepository, RequestContextRepository>();
-
+        services.AddRateLimiter(options =>
+            RateLimitConfiguration.ConfigurePolicies(options, configuration));
         return services;
     }
 }

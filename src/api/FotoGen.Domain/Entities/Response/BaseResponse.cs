@@ -9,7 +9,7 @@ public class BaseResponse<T>
 
     public T Data
     {
-        get => _data ?? throw new InvalidOperationException("Response contains no data");
+        get => _data;
     }
 
     public IDictionary<string, string[]>? Errors { get; set; }

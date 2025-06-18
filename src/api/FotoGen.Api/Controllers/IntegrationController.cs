@@ -1,3 +1,4 @@
+using FotoGen.Application.Configuration;
 using FotoGen.Application.UseCases.CheckUserModelAvailable;
 using FotoGen.Application.UseCases.GeneratePhoto;
 using FotoGen.Application.UseCases.TrainModel;
@@ -6,6 +7,7 @@ using FotoGen.Requests;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace FotoGen.Controllers;
 
@@ -20,7 +22,7 @@ public class IntegrationController : ControllerBase
     {
         _mediator = mediator;
     }
-
+    [EnableRateLimiting(RateLimitPolicies.PhotoGeneration)]
     [HttpPost("generate-photo")]
     [ProducesResponseType<GeneratePhotoResponse>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GeneratePhotoAsync(
@@ -45,7 +47,7 @@ public class IntegrationController : ControllerBase
         var result = await _mediator.Send(query, cancel);
         return result.ToActionResult();
     }
-
+    [EnableRateLimiting(RateLimitPolicies.ModelTraining)]
     [HttpPost("train-model")]
     [ProducesResponseType<TrainModelResponse>(StatusCodes.Status200OK)]
     public async Task<IActionResult> TrainModelAsync(TrainModelRequest request, CancellationToken cancel)
