@@ -20,8 +20,8 @@ builder.Services.ConfigureAuthentication();
 builder.Services.ConfigureAuthorization();
 builder.Services.ConfigureCors();
 builder.Services.AddApplication().AddInfrastructure();
-var app = builder.Build();
 
+var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger(setup =>
@@ -51,6 +51,7 @@ if (app.Environment.IsDevelopment())
 app.UseCorsMiddleware();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 app.MapControllers();
 app.UseExceptionHandler("/api/errors");
 app.Run();

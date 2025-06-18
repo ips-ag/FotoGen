@@ -13,6 +13,9 @@ using FotoGen.Infrastructure.Replicate.GetTrainedModelStatus.Converters;
 using FotoGen.Infrastructure.Repositories;
 using FotoGen.Infrastructure.Repositories.Requests;
 using FotoGen.Infrastructure.Settings;
+using FotoGen.Infrastructure.Settings.RateLimit;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -78,7 +81,12 @@ public static class InfrastructureDI
         services.AddSingleton<RequestContextAccessor>();
         services.AddSingleton<RequestContextFactory>();
         services.AddScoped<IRequestContextRepository, RequestContextRepository>();
-
+        services.AddOptions<RateLimitSettings>()
+            .BindConfiguration(RateLimitSettings.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        services.AddTransient<IConfigureOptions<RateLimiterOptions>, ConfigureRateLimiterOptions>();
+        services.AddRateLimiter();
         return services;
     }
 }
