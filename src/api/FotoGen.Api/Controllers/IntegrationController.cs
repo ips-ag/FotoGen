@@ -22,9 +22,10 @@ public class IntegrationController : ControllerBase
     {
         _mediator = mediator;
     }
-    [EnableRateLimiting(RateLimitPolicies.PhotoGeneration)]
+
     [HttpPost("generate-photo")]
     [ProducesResponseType<GeneratePhotoResponse>(StatusCodes.Status200OK)]
+    [EnableRateLimiting(RateLimitPolicies.PhotoGeneration)]
     public async Task<IActionResult> GeneratePhotoAsync(
         [FromBody] GeneratePhotoRequest request,
         CancellationToken cancel)
@@ -47,9 +48,10 @@ public class IntegrationController : ControllerBase
         var result = await _mediator.Send(query, cancel);
         return result.ToActionResult();
     }
-    [EnableRateLimiting(RateLimitPolicies.ModelTraining)]
+
     [HttpPost("train-model")]
     [ProducesResponseType<TrainModelResponse>(StatusCodes.Status200OK)]
+    [EnableRateLimiting(RateLimitPolicies.ModelTraining)]
     public async Task<IActionResult> TrainModelAsync(TrainModelRequest request, CancellationToken cancel)
     {
         var command = new TrainModelCommand { InputImageUrl = request.ImageUrl };

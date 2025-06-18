@@ -1,4 +1,4 @@
-namespace FotoGen.Infrastructure.Settings
+namespace FotoGen.Infrastructure.Settings.RateLimit
 {
     public class RateLimitSettings
     {
@@ -11,6 +11,6 @@ namespace FotoGen.Infrastructure.Settings
     public class RateLimitPolicy
     {
         public required int PermitLimit { get; init; }
-        public required int WindowInDays { get; init; }
+        public required TimeSpan Window { get; init; }
     }
 }

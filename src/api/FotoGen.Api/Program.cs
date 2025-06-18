@@ -19,7 +19,8 @@ builder.ConfigureOpenTelemetry();
 builder.Services.ConfigureAuthentication();
 builder.Services.ConfigureAuthorization();
 builder.Services.ConfigureCors();
-builder.Services.AddApplication().AddInfrastructure(builder.Configuration);
+builder.Services.AddApplication().AddInfrastructure();
+
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
@@ -47,7 +48,6 @@ if (app.Environment.IsDevelopment())
         }
     });
 }
-app.UseRouting();
 app.UseCorsMiddleware();
 app.UseAuthentication();
 app.UseAuthorization();
