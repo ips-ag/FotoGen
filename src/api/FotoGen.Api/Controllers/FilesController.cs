@@ -17,7 +17,7 @@ public class FilesController : ControllerBase
     }
 
     [HttpPost("upload")]
-    [RequestSizeLimit(50 * 1024 * 1024)]
+    [RequestSizeLimit(200 * 1024 * 1024)]
     public async Task<IActionResult> UploadFile(IFormFile file, CancellationToken cancellationToken)
     {
         var command = new FileUploadCommand { File = file };
