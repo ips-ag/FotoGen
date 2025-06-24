@@ -38,14 +38,15 @@ internal class ConfigureJwtBearerOptions : IPostConfigureOptions<JwtBearerOption
             {
                 if (c.HttpContext.Response.HasStarted) return;
                 c.NoResult();
-                c.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                c.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 c.Response.ContentType = MediaTypeNames.Application.Json;
                 var factory = c.HttpContext.RequestServices.GetRequiredService<ProblemDetailsFactory>();
                 var problem = factory.CreateProblemDetails(
                     c.HttpContext,
                     statusCode: (int)HttpStatusCode.Unauthorized,
                     title: "Authentication Failed",
-                    detail: c.Exception.Message);
+                    detail: c.Exception.Message,
+                    type: $"https://httpstatuses.io/{c.Response.StatusCode}");
                 await c.Response.WriteAsJsonAsync(problem, c.HttpContext.RequestAborted);
             }
         };

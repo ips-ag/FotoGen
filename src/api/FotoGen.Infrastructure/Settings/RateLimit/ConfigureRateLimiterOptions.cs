@@ -79,7 +79,7 @@ internal class ConfigureRateLimiterOptions : IConfigureOptions<RateLimiterOption
             title: "Rate limit exceeded",
             detail: $"You have exceeded the rate limit {policyName} for this resource. Please try again later.",
             instance: context.HttpContext.Request.Path,
-            type: "https://httpstatuses.io/429");
+            type: $"https://httpstatuses.io/{StatusCodes.Status429TooManyRequests}");
         (string errorCode, string? message) = policyName switch
         {
             RateLimitPolicies.PhotoGeneration => (
