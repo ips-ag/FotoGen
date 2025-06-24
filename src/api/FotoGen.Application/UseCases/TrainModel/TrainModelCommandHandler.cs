@@ -64,7 +64,7 @@ public class TrainModelCommandHandler : IRequestHandler<TrainModelCommand, BaseR
             TrainingStatus: ModelTrainingStatus.InProgress,
             CreatedAt: DateTime.UtcNow,
             CanceledUrl: trainModelResult.Data.CancelUrl);
-        await _modelTrainingRepository.CreateAsync(modelTraining);
+        await _modelTrainingRepository.CreateAsync(modelTraining, cancellationToken);
         var result = new TrainModelResponse(
             trainModelResult.Data.Id,
             trainModelResult.Data.Status,

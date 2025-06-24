@@ -40,7 +40,9 @@ public class ModelTrainingBackgroundService : BackgroundService
                 var replicateClient = scope.ServiceProvider.GetRequiredService<IReplicateService>();
                 var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
                 var statusConverter = scope.ServiceProvider.GetRequiredService<TrainingStatusConverter>();
-                var modelsInTraining = await modelRepository.GetByStatusAsync(ModelTrainingStatus.InProgress);
+                var modelsInTraining = await modelRepository.GetByStatusAsync(
+                    ModelTrainingStatus.InProgress,
+                    stoppingToken);
                 if (modelsInTraining.Count == 0)
                 {
                     _logger.LogDebug("No models currently in training status");
@@ -77,7 +79,7 @@ public class ModelTrainingBackgroundService : BackgroundService
                             TrainingStatus = newStatus.Value,
                             SucceededAt = newStatus == ModelTrainingStatus.Succeeded ? DateTime.UtcNow : null
                         };
-                        await modelRepository.UpdateAsync(updatedModelTraining);
+                        await modelRepository.UpdateAsync(updatedModelTraining, stoppingToken);
                         if (newStatus == ModelTrainingStatus.Succeeded)
                         {
                             await mediator.Publish(

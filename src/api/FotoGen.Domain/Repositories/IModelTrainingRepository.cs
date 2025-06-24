@@ -5,7 +5,7 @@ namespace FotoGen.Domain.Repositories;
 
 public interface IModelTrainingRepository
 {
-    Task<List<ModelTraining>> GetByStatusAsync(ModelTrainingStatus trainingStatus);
-    Task CreateAsync(ModelTraining entity);
-    Task UpdateAsync(ModelTraining entity);
+    Task<List<ModelTraining>> GetByStatusAsync(ModelTrainingStatus trainingStatus, CancellationToken cancel);
+    Task CreateAsync(ModelTraining entity, CancellationToken cancel);
+    Task UpdateAsync(ModelTraining entity, CancellationToken cancel);
 }
