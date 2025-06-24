@@ -9,7 +9,6 @@ internal static class OpenTelemetryExtensions
     private static readonly List<string> ConfigurationKeys =
     [
         "APPLICATIONINSIGHTS_CONNECTION_STRING",
-        "ApplicationInsights:Connection:String",
         "AzureMonitor:ConnectionString"
     ];
 
