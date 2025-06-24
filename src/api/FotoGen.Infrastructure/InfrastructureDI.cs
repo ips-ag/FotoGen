@@ -42,11 +42,7 @@ public static class InfrastructureDI
             .BindConfiguration(AzureStorageSettings.SectionName)
             .ValidateDataAnnotations()
             .ValidateOnStart();
-        services.AddScoped<IModelTrainingRepository>(provider =>
-        {
-            var options = provider.GetRequiredService<IOptions<ModelTrainingSettings>>().Value;
-            return new ModelTrainingRepository(options.CsvFilePath);
-        });
+        services.AddSingleton<IModelTrainingRepository, ModelTrainingRepository>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddSingleton<TrainingStatusConverter>();
         services.AddHttpClient<IReplicateService, ReplicateService>((sp, client) =>

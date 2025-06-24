@@ -1,99 +1,93 @@
-using FotoGen.Domain.Entities;
 using FotoGen.Domain.Entities.Models;
 using FotoGen.Domain.Repositories;
+using FotoGen.Infrastructure.Settings;
+using Microsoft.Extensions.Options;
 
 namespace FotoGen.Infrastructure.Repositories;
 
 public class ModelTrainingRepository : IModelTrainingRepository
 {
-    private readonly string _csvFilePath;
-    private readonly Lock _fileLock = new();
+    private readonly IOptionsMonitor<ModelTrainingSettings> _options;
+    private readonly SemaphoreSlim _fileLock = new(1, 1);
 
-    public ModelTrainingRepository(string csvFilePath)
+    public ModelTrainingRepository(IOptionsMonitor<ModelTrainingSettings> options)
     {
-        _csvFilePath = csvFilePath;
+        _options = options;
+        _options.OnChange(Initialize);
+    }
 
-        // Ensure directory exists
-        string? directory = Path.GetDirectoryName(_csvFilePath);
+    public async Task CreateAsync(ModelTraining entity, CancellationToken cancel)
+    {
+        string line = CsvHelper.ConvertEntityToCsvLine(entity);
+        await _fileLock.WaitAsync(cancel);
+        try
+        {
+            await File.AppendAllTextAsync(_options.CurrentValue.CsvFilePath, line + Environment.NewLine, cancel);
+        }
+        finally
+        {
+            _fileLock.Release();
+        }
+    }
+
+    public async Task<List<ModelTraining>> GetByStatusAsync(
+        ModelTrainingStatus trainingStatus,
+        CancellationToken cancel)
+    {
+        await _fileLock.WaitAsync(cancel);
+        try
+        {
+            if (!File.Exists(_options.CurrentValue.CsvFilePath)) return [];
+            string[] lines = await File.ReadAllLinesAsync(_options.CurrentValue.CsvFilePath, cancel);
+            return lines.Skip(1) // Skip header
+                .Select(CsvHelper.ConvertCsvLineToEntity)
+                .Where(e => e.TrainingStatus == trainingStatus)
+                .ToList();
+        }
+        finally
+        {
+            _fileLock.Release();
+        }
+    }
+
+    public async Task UpdateAsync(ModelTraining entity, CancellationToken cancel)
+    {
+        await _fileLock.WaitAsync(cancel);
+        try
+        {
+            if (!File.Exists(_options.CurrentValue.CsvFilePath)) throw new FileNotFoundException("CSV file not found");
+            string[] lines = await File.ReadAllLinesAsync(_options.CurrentValue.CsvFilePath, cancel);
+            var found = false;
+            for (var i = 1; i < lines.Length; i++) // Start from 1 to skip header
+            {
+                var currentEntity = CsvHelper.ConvertCsvLineToEntity(lines[i]);
+                if (currentEntity.Id != entity.Id) continue;
+                lines[i] = CsvHelper.ConvertEntityToCsvLine(entity);
+                found = true;
+                break;
+            }
+            if (!found) throw new KeyNotFoundException($"Entity with ID {entity.Id} not found");
+            File.WriteAllLines(_options.CurrentValue.CsvFilePath, lines);
+        }
+        finally
+        {
+            _fileLock.Release();
+        }
+    }
+
+    private static void Initialize(ModelTrainingSettings settings)
+    {
+        string csvFilePath = settings.CsvFilePath;
+        string? directory = Path.GetDirectoryName(csvFilePath);
         if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
         {
             Directory.CreateDirectory(directory);
         }
-
-        // Create file with headers if it doesn't exist
-        if (!File.Exists(_csvFilePath))
+        if (!File.Exists(csvFilePath))
         {
-            File.WriteAllText(
-                _csvFilePath,
-                "Id,ModelName,UserEmail,UserName,ImageUrl,TriggerWord,Status,CreatedAt,SuccessedAt,CanceledUrl\n");
+            File.WriteAllLines(
+                csvFilePath,
+                ["Id,ModelName,UserEmail,UserName,ImageUrl,TriggerWord,Status,CreatedAt,SuccessedAt,CanceledUrl"]);
         }
-    }
-
-    public async Task CreateAsync(ModelTraining entity)
-    {
-        string line = CsvHelper.ConvertEntityToCsvLine(entity);
-
-        await Task.Run(() =>
-        {
-            lock (_fileLock)
-            {
-                File.AppendAllText(_csvFilePath, line + Environment.NewLine);
-            }
-        });
-    }
-
-    public async Task<List<ModelTraining>> GetByStatusAsync(ModelTrainingStatus trainingStatus)
-    {
-        return await Task.Run(() =>
-        {
-            lock (_fileLock)
-            {
-                if (!File.Exists(_csvFilePath))
-                {
-                    return new List<ModelTraining>();
-                }
-
-                string[] lines = File.ReadAllLines(_csvFilePath);
-                return lines.Skip(1) // Skip header
-                    .Select(CsvHelper.ConvertCsvLineToEntity)
-                    .Where(e => e.TrainingStatus == trainingStatus)
-                    .ToList();
-            }
-        });
-    }
-
-    public async Task UpdateAsync(ModelTraining entity)
-    {
-        await Task.Run(() =>
-        {
-            lock (_fileLock)
-            {
-                if (!File.Exists(_csvFilePath))
-                {
-                    throw new FileNotFoundException("CSV file not found");
-                }
-
-                var lines = File.ReadAllLines(_csvFilePath).ToList();
-                var found = false;
-
-                for (var i = 1; i < lines.Count; i++) // Start from 1 to skip header
-                {
-                    var currentEntity = CsvHelper.ConvertCsvLineToEntity(lines[i]);
-                    if (currentEntity.Id == entity.Id)
-                    {
-                        lines[i] = CsvHelper.ConvertEntityToCsvLine(entity);
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (!found)
-                {
-                    throw new KeyNotFoundException($"Entity with ID {entity.Id} not found");
-                }
-
-                File.WriteAllLines(_csvFilePath, lines);
-            }
-        });
     }
 }

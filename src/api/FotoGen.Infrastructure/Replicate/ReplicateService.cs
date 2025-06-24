@@ -1,6 +1,5 @@
+using System.Net;
 using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
 using FotoGen.Application.Interfaces;
 using FotoGen.Domain.Entities.Images;
 using FotoGen.Domain.Entities.Models;
@@ -13,6 +12,8 @@ using FotoGen.Infrastructure.Replicate.GetTrainedModelStatus;
 using FotoGen.Infrastructure.Replicate.TrainModel;
 using FotoGen.Infrastructure.Replicate.UseModel.Converters;
 using FotoGen.Infrastructure.Replicate.UseModel.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TrainModelResponse = FotoGen.Domain.Entities.Models.TrainModelResponse;
 
@@ -22,22 +23,33 @@ public class ReplicateService : IReplicateService
 {
     private readonly ReplicateSetting _replicateSetting;
     private readonly HttpClient _httpClient;
+    private readonly ILogger<ReplicateService> _logger;
 
-    public ReplicateService(IOptions<ReplicateSetting> replicateSetting, HttpClient httpClient)
+    public ReplicateService(
+        IOptions<ReplicateSetting> replicateSetting,
+        HttpClient httpClient,
+        ILogger<ReplicateService> logger)
     {
         _replicateSetting = replicateSetting.Value;
         _httpClient = httpClient;
+        _logger = logger;
     }
 
-    public async Task<BaseResponse<bool>> CreateTrainedModelAsync(CreateTrainedModelRequest dto)
+    public async Task<BaseResponse<bool>> CreateTrainedModelAsync(
+        CreateTrainedModelRequest request,
+        CancellationToken cancel)
     {
-        var requestModel = CreateModelMapper.ToRequest(dto, _replicateSetting);
-        string json = JsonSerializer.Serialize(requestModel);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var response = await _httpClient.PostAsync("models", content);
-        return !response.IsSuccessStatusCode
-            ? BaseResponse<bool>.Fail(ErrorCode.CreateReplicateModelFail)
-            : BaseResponse<bool>.Success(true);
+        var requestModel = CreateModelMapper.ToRequest(request, _replicateSetting);
+        var content = JsonContent.Create(requestModel);
+        var responseModel = await _httpClient.PostAsync("models", content, cancel);
+        if (responseModel.IsSuccessStatusCode) return BaseResponse<bool>.Success(true);
+        var problem = await responseModel.Content.ReadFromJsonAsync<ProblemDetails>(cancel);
+        _logger.LogWarning(
+            "Failed to create trained model {ModelName}, Status Code: {StatusCode}, Detail: {ProblemDetail}",
+            request.Name,
+            responseModel.StatusCode,
+            problem?.Detail);
+        return BaseResponse<bool>.Fail(ErrorCode.CreateReplicateModelFail);
     }
 
     public async Task<BaseResponse<GenerateImageResponse>> GeneratePhotoAsync(
@@ -54,10 +66,15 @@ public class ReplicateService : IReplicateService
         var response = await _httpClient.PostAsync("predictions", content, cancel);
         if (!response.IsSuccessStatusCode)
         {
+            var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>(cancel);
+            _logger.LogWarning(
+                "Failed to generate photo using model {ModelName}, Status Code: {StatusCode}, Detail: {ProblemDetail}",
+                model.Name,
+                response.StatusCode,
+                problem?.Detail);
             return BaseResponse<GenerateImageResponse>.Fail(ErrorCode.GeneratePhotoFail);
         }
-        string contentResponse = await response.Content.ReadAsStringAsync(cancel);
-        var responseModel = JsonSerializer.Deserialize<UseModelResponseModel>(contentResponse);
+        var responseModel = await response.Content.ReadFromJsonAsync<UseModelResponseModel>(cancel);
         return responseModel is null
             ? BaseResponse<GenerateImageResponse>.Fail(ErrorCode.GeneratePhotoFail)
             : BaseResponse<GenerateImageResponse>.Success(UseModelMapper.ToDomain(responseModel));
@@ -67,43 +84,60 @@ public class ReplicateService : IReplicateService
     {
         var url = $"models/{_replicateSetting.Owner}/{name}";
         var response = await _httpClient.GetAsync(url, cancel);
-        if (!response.IsSuccessStatusCode) return null;
+        if (response is { IsSuccessStatusCode: false, StatusCode: HttpStatusCode.NotFound }) return null;
+        if (!response.IsSuccessStatusCode)
+        {
+            var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>(cancel);
+            _logger.LogWarning(
+                "Failed to get trained model by name {ModelName}, Status Code: {StatusCode}, Detail: {ProblemDetail}",
+                name,
+                response.StatusCode,
+                problem?.Detail);
+            return null;
+        }
         var responseModel = await response.Content.ReadFromJsonAsync<GetTrainedModelResponseModel>(cancel);
         if (responseModel is null) return null;
         var trainedModel = TrainedModelMapper.ToDomain(responseModel);
         return trainedModel;
     }
 
-    public async Task<BaseResponse<QueryModelTrainingStatus>> GetModelTrainingStatusAsync(string trainModelId)
+    public async Task<BaseResponse<QueryModelTrainingStatus>> GetModelTrainingStatusAsync(
+        string trainModelId,
+        CancellationToken cancel)
     {
         var getUrl = $"trainings/{trainModelId}";
-        var response = await _httpClient.GetAsync(getUrl);
+        var response = await _httpClient.GetAsync(getUrl, cancel);
         if (!response.IsSuccessStatusCode)
         {
             return BaseResponse<QueryModelTrainingStatus>.Fail(ErrorCode.GetReplicateTrainModelFail);
         }
-        string contentResponse = await response.Content.ReadAsStringAsync();
-        var getTrainModelResponse = JsonSerializer.Deserialize<GetTrainedModelStatusResponse>(contentResponse);
+        var getTrainModelResponse = await response.Content.ReadFromJsonAsync<GetTrainedModelStatusResponse>(cancel);
         return getTrainModelResponse is null
             ? BaseResponse<QueryModelTrainingStatus>.Fail(ErrorCode.GetReplicateTrainModelFail)
             : BaseResponse<QueryModelTrainingStatus>.Success(
                 GetTrainedModelStatusMapper.ToResponseDto(getTrainModelResponse));
     }
 
-    public async Task<BaseResponse<TrainModelResponse>> CreateModelTrainingAsync(TrainModelRequest request)
+    public async Task<BaseResponse<TrainModelResponse>> CreateModelTrainingAsync(
+        TrainModelRequest request,
+        CancellationToken cancel)
     {
         var trainingSettings = _replicateSetting.Training;
         var postUrl = $"models/{trainingSettings.Model}/versions/{trainingSettings.Version}/trainings";
         var requestModel = TrainModelMapper.ToRequest(request, _replicateSetting);
-        string json = JsonSerializer.Serialize(requestModel);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var response = await _httpClient.PostAsync(postUrl, content);
+        var content = JsonContent.Create(requestModel);
+        var response = await _httpClient.PostAsync(postUrl, content, cancel);
         if (!response.IsSuccessStatusCode)
         {
+            var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>(cancel);
+            _logger.LogWarning(
+                "Failed to create model training for {ModelName}, Status Code: {StatusCode}, Detail: {ProblemDetail}",
+                request.Name,
+                response.StatusCode,
+                problem?.Detail);
             return BaseResponse<TrainModelResponse>.Fail(ErrorCode.CreateReplicateModelFail);
         }
-        string contentResponse = await response.Content.ReadAsStringAsync();
-        var trainModelResponse = JsonSerializer.Deserialize<TrainModelResponseModel>(contentResponse);
+        var trainModelResponse = await response.Content.ReadFromJsonAsync<TrainModelResponseModel>(cancel);
         return trainModelResponse is null
             ? BaseResponse<TrainModelResponse>.Fail(ErrorCode.CreateReplicateModelFail)
             : BaseResponse<TrainModelResponse>.Success(TrainModelMapper.ToResponseDto(trainModelResponse));

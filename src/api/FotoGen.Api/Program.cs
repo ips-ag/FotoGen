@@ -1,5 +1,6 @@
 using FotoGen.Application;
 using FotoGen.Extensions.Cors;
+using FotoGen.Extensions.Logging;
 using FotoGen.Extensions.OpenApi;
 using FotoGen.Extensions.OpenApi.Configuration;
 using FotoGen.Extensions.OpenTelemetry;
@@ -15,6 +16,7 @@ builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddCustomApiVersioning();
 builder.Services.AddSwaggerGenRespectingCustomApiVersioning();
+builder.Services.ConfigureHttpLogging();
 builder.ConfigureOpenTelemetry();
 builder.Services.ConfigureAuthentication();
 builder.Services.ConfigureAuthorization();
@@ -48,6 +50,7 @@ if (app.Environment.IsDevelopment())
         }
     });
 }
+app.UseHttpLogging();
 app.UseCorsMiddleware();
 app.UseAuthentication();
 app.UseAuthorization();
