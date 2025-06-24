@@ -41,7 +41,9 @@ public class TrainModelCommandHandler : IRequestHandler<TrainModelCommand, BaseR
         if (trainedModel is null)
         {
             var createReplicateModelRequestDto = new CreateTrainedModelRequest(modelName);
-            var createModelResult = await _replicateService.CreateTrainedModelAsync(createReplicateModelRequestDto);
+            var createModelResult = await _replicateService.CreateTrainedModelAsync(
+                createReplicateModelRequestDto,
+                cancellationToken);
             if (!createModelResult.IsSuccess)
             {
                 return BaseResponse<TrainModelResponse>.Fail(ErrorCode.CreateReplicateModelFail);
@@ -49,7 +51,7 @@ public class TrainModelCommandHandler : IRequestHandler<TrainModelCommand, BaseR
         }
         string triggerWord = new TriggerWord(user);
         var trainModelRequest = new TrainModelRequest(modelName, request.InputImageUrl, triggerWord);
-        var trainModelResult = await _replicateService.CreateModelTrainingAsync(trainModelRequest);
+        var trainModelResult = await _replicateService.CreateModelTrainingAsync(trainModelRequest, cancellationToken);
         if (!trainModelResult.IsSuccess)
         {
             return BaseResponse<TrainModelResponse>.Fail(ErrorCode.TrainReplicateModelFail);

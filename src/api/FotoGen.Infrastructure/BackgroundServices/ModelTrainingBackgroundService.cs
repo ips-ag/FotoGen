@@ -54,7 +54,8 @@ public class ModelTrainingBackgroundService : BackgroundService
                 {
                     try
                     {
-                        var statusResult = await replicateClient.GetModelTrainingStatusAsync(modelTraining.Id);
+                        var statusResult =
+                            await replicateClient.GetModelTrainingStatusAsync(modelTraining.Id, stoppingToken);
                         if (!statusResult.IsSuccess)
                         {
                             _logger.LogWarning(
