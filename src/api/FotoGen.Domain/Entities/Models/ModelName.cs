@@ -32,6 +32,6 @@ public partial class ModelName
     [GeneratedRegex(@"^[-_.]+|[-_.]+$")]
     private static partial Regex LeadingAndTrailingSeparators();
 
-    [GeneratedRegex("(_-|-_)+")]
+    [GeneratedRegex("(_-|-_|--)+")]
     private static partial Regex ForbiddenCharacterCombinations();
 }
