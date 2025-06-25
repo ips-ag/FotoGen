@@ -1,4 +1,5 @@
-﻿using FotoGen.Domain.Entities.Requests;
+using System.Text.RegularExpressions;
+using FotoGen.Domain.Entities.Requests;
 
 namespace FotoGen.Domain.Entities.Models;
 
@@ -8,18 +9,20 @@ public class ModelName
 
     public ModelName(User user)
     {
-        string namePart = Normalize(user.FullName);
-        string idPart = Normalize(user.Id);
-        Value = $"{namePart}_{idPart}";
+        Value = FormatToValidModelName($"{user.FullName}_{user.Id}");
+
     }
 
     public static implicit operator string(ModelName modelName)
     {
         return modelName.Value;
     }
-
-    private static string Normalize(string value)
+    private static string FormatToValidModelName(string input)
     {
-        return value.Replace(" ", "_").ToLower();
+        input = input.ToLower();
+        input = Regex.Replace(input, @"[^a-z0-9._-]", "");
+        input = Regex.Replace(input, @"^[-_.]+|[-_.]+$", "");
+        input = Regex.Replace(input, "(_-|-_)+", "");
+        return input;
     }
 }
