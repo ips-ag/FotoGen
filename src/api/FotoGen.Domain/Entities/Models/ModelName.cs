@@ -1,16 +1,15 @@
-﻿using FotoGen.Domain.Entities.Requests;
+using System.Text.RegularExpressions;
+using FotoGen.Domain.Entities.Requests;
 
 namespace FotoGen.Domain.Entities.Models;
 
-public class ModelName
+public partial class ModelName
 {
     public string Value { get; }
 
     public ModelName(User user)
     {
-        string namePart = Normalize(user.FullName);
-        string idPart = Normalize(user.Id);
-        Value = $"{namePart}_{idPart}";
+        Value = Normalize($"{user.FullName}_{user.Id}");
     }
 
     public static implicit operator string(ModelName modelName)
@@ -18,8 +17,21 @@ public class ModelName
         return modelName.Value;
     }
 
-    private static string Normalize(string value)
+    private static string Normalize(string input)
     {
-        return value.Replace(" ", "_").ToLower();
+        input = input.Replace(" ", "_").ToLowerInvariant();
+        input = ValidCharacters().Replace(input, "");
+        input = LeadingAndTrailingSeparators().Replace(input, "");
+        input = ForbiddenCharacterCombinations().Replace(input, "");
+        return input;
     }
+
+    [GeneratedRegex(@"[^a-z0-9._-]")]
+    private static partial Regex ValidCharacters();
+
+    [GeneratedRegex(@"^[-_.]+|[-_.]+$")]
+    private static partial Regex LeadingAndTrailingSeparators();
+
+    [GeneratedRegex("(_-|-_)+")]
+    private static partial Regex ForbiddenCharacterCombinations();
 }
