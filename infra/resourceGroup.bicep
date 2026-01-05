@@ -205,7 +205,7 @@ resource apiWebAppConfig 'Microsoft.Web/sites/config@2024-04-01' = {
   name: '${apiWebApp.name}/web'
   dependsOn: [keyVaultSecretsUserRoleAssignment]
   properties: {
-    linuxFxVersion: 'DOTNETCORE|9.0'
+    linuxFxVersion: 'DOTNETCORE|10.0'
     alwaysOn: true
     appCommandLine: apiCustomCommand
     cors: {
