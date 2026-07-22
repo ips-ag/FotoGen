@@ -1,3 +1,0 @@
-[submodule "src/app"]
-	path = src/app
-	url = https://github.com/cvietnguyen/foto-gen-ips-create

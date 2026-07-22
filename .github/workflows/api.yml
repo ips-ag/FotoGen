@@ -18,7 +18,6 @@ jobs:
         with:
           fetch-depth: 1
           lfs: true
-          submodules: true
           clean: true
 
       - name: Setup .NET SDK
