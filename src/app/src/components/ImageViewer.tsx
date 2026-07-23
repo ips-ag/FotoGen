@@ -146,7 +146,7 @@ export const ImageViewer = ({ src, alt, className = "" }: ImageViewerProps) => {
         />
       </div>
       
-      <div className="absolute bottom-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs">
+      <div className="absolute bottom-2 left-2 bg-black/60 text-white px-2 py-1 rounded-sm text-xs">
         {zoom}%
       </div>
     </div>

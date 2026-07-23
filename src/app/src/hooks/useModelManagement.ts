@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useApi } from '@/hooks/useApi';
 import { useToast } from '@/hooks/use-toast';
@@ -27,42 +27,7 @@ export const useModelManagement = (user: User | null, isAuthenticated: boolean) 
   console.log('useModelManagement hook - isAuthenticated:', isAuthenticated);
   console.log('useModelManagement hook - user?.id:', user?.id);
 
-  useEffect(() => {
-    console.log('useModelManagement useEffect triggered');
-    console.log('useModelManagement effect - username:', username, 'modelName:', modelName, 'pathname:', location.pathname);
-    console.log('useModelManagement effect - isAuthenticated:', isAuthenticated, 'user?.id:', user?.id);
-    
-    // Wait for authentication to be available
-    if (isAuthenticated && user?.id) {
-      console.log('useModelManagement - All conditions met, proceeding with model check');
-      // Check if we're coming from a shared model URL or if there's stored model info
-      const storedModelInfo = sessionStorage.getItem('sharedModelInfo');
-      console.log('useModelManagement - storedModelInfo:', storedModelInfo);
-      
-      if (username && modelName) {
-        // When accessing another user's model via URL, use the modelName from params
-        console.log('useModelManagement - Detected shared model URL - calling checkOtherUserModel with:', modelName, username);
-        checkOtherUserModel(modelName, username);
-      } else if (storedModelInfo && location.pathname === '/home') {
-        // When on /home but we have stored shared model info, use it
-        console.log('useModelManagement - Using stored shared model info on /home');
-        const parsed = JSON.parse(storedModelInfo);
-        setModelInfo(parsed);
-        setUserHasModel(true);
-        setIsLoadingModel(false);
-      } else {
-        // When accessing user's own model, let backend find it and clear any stored shared model
-        console.log('useModelManagement - Accessing user own model - clearing stored shared model');
-        sessionStorage.removeItem('sharedModelInfo');
-        checkUserModel();
-      }
-    } else if (!isAuthenticated) {
-      console.log('useModelManagement - User not authenticated, setting loading to false');
-      setIsLoadingModel(false);
-    }
-  }, [isAuthenticated, user?.id, username, modelName, location.pathname, checkUserModelAvailable]);
-
-  const checkOtherUserModel = async (modelId: string, ownerName: string) => {
+  const checkOtherUserModel = useCallback(async (modelId: string, ownerName: string) => {
     console.log('checkOtherUserModel called with:', { modelId, ownerName, userId: user?.id });
     
     if (!user?.id) {
@@ -111,9 +76,9 @@ export const useModelManagement = (user: User | null, isAuthenticated: boolean) 
     } finally {
       setIsLoadingModel(false);
     }
-  };
+  }, [user, checkUserModelAvailable, toast, navigate]);
 
-  const checkUserModel = async () => {
+  const checkUserModel = useCallback(async () => {
     console.log('checkUserModel called with userId:', user?.id);
     
     if (!user?.id) {
@@ -145,7 +110,43 @@ export const useModelManagement = (user: User | null, isAuthenticated: boolean) 
     } finally {
       setIsLoadingModel(false);
     }
-  };
+  }, [user, checkUserModelAvailable]);
+
+  useEffect(() => {
+    console.log('useModelManagement useEffect triggered');
+    console.log('useModelManagement effect - username:', username, 'modelName:', modelName, 'pathname:', location.pathname);
+    console.log('useModelManagement effect - isAuthenticated:', isAuthenticated, 'user?.id:', user?.id);
+
+    // Wait for authentication to be available
+    if (isAuthenticated && user?.id) {
+      console.log('useModelManagement - All conditions met, proceeding with model check');
+      // Check if we're coming from a shared model URL or if there's stored model info
+      const storedModelInfo = sessionStorage.getItem('sharedModelInfo');
+      console.log('useModelManagement - storedModelInfo:', storedModelInfo);
+
+      if (username && modelName) {
+        // When accessing another user's model via URL, use the modelName from params
+        console.log('useModelManagement - Detected shared model URL - calling checkOtherUserModel with:', modelName, username);
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- known rule over-strictness for fetch-on-param-change: https://github.com/facebook/react/issues/34743
+        checkOtherUserModel(modelName, username);
+      } else if (storedModelInfo && location.pathname === '/home') {
+        // When on /home but we have stored shared model info, use it
+        console.log('useModelManagement - Using stored shared model info on /home');
+        const parsed = JSON.parse(storedModelInfo);
+        setModelInfo(parsed);
+        setUserHasModel(true);
+        setIsLoadingModel(false);
+      } else {
+        // When accessing user's own model, let backend find it and clear any stored shared model
+        console.log('useModelManagement - Accessing user own model - clearing stored shared model');
+        sessionStorage.removeItem('sharedModelInfo');
+        checkUserModel();
+      }
+    } else if (!isAuthenticated) {
+      console.log('useModelManagement - User not authenticated, setting loading to false');
+      setIsLoadingModel(false);
+    }
+  }, [isAuthenticated, user?.id, username, modelName, location.pathname, checkOtherUserModel, checkUserModel]);
 
   return {
     userHasModel,
