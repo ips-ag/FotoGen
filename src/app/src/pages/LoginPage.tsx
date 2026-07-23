@@ -70,7 +70,7 @@ const LoginPage = () => {
   console.log('LoginPage - Rendering login page component');
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 p-4">
-      <Card className="w-full max-w-md shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+      <Card className="w-full max-w-md shadow-xl border-0 bg-white/80 backdrop-blur-xs">
         <CardHeader className="text-center pb-8 pt-12">
           <div className="flex items-center justify-center mb-6">
             <img 

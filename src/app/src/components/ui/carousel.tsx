@@ -109,6 +109,8 @@ const Carousel = React.forwardRef<
         return
       }
 
+      // Sync current embla state once, then subscribe for future changes.
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- known rule over-strictness for this pattern: https://github.com/facebook/react/issues/34743
       onSelect(api)
       api.on("reInit", onSelect)
       api.on("select", onSelect)

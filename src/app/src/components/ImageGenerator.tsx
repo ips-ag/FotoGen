@@ -14,7 +14,7 @@ interface ImageGeneratorProps {
 
 export const ImageGenerator = ({ prompt, onPromptChange, onGenerate, isGenerating }: ImageGeneratorProps) => {
   return (
-    <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+    <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-xs">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Zap className="h-5 w-5" style={{ color: '#17428c' }} />
