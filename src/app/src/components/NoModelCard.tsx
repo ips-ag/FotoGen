@@ -20,7 +20,7 @@ export const NoModelCard = ({ onTrainModel }: NoModelCardProps) => {
         </p>
       </div>
 
-      <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+      <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-xs">
         <CardContent className="p-12">
           <div className="space-y-6">
             <div className="p-8 rounded-full w-32 h-32 mx-auto flex items-center justify-center" style={{ background: `linear-gradient(to right, rgba(23, 66, 140, 0.1), rgba(18, 85, 151, 0.1))` }}>

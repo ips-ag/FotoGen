@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { useMsal } from '@azure/msal-react';
 
 export interface User {
@@ -10,27 +10,24 @@ export interface User {
 }
 
 export const useUserData = () => {
-  const { accounts, instance } = useMsal();
-  const [user, setUser] = useState<User | null>(null);
+  const { accounts } = useMsal();
 
-  useEffect(() => {
-    if (accounts && accounts.length > 0) {
-      const account = accounts[0];
-      const email = (account.idTokenClaims?.email as string) || account.username;
-      const id = account.idTokenClaims?.sub as string;
-      
-      setUser({
-        name: account.name,
-        email: email,
-        displayName: account.name,
-        id: id
-      });
-
-      console.log('User data set from MSAL account');
-    } else {
-      setUser(null);
+  const user = useMemo<User | null>(() => {
+    if (!accounts || accounts.length === 0) {
+      return null;
     }
-  }, [accounts, instance]);
+
+    const account = accounts[0];
+    const email = (account.idTokenClaims?.email as string) || account.username;
+    const id = account.idTokenClaims?.sub as string;
+
+    return {
+      name: account.name,
+      email: email,
+      displayName: account.name,
+      id: id
+    };
+  }, [accounts]);
 
   return { user };
 };
