@@ -1,6 +1,6 @@
 
 import { useMsal } from "@azure/msal-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { loginRequest } from "./authConfig";
 import { Button } from '@/components/ui/button';
 import { Building } from 'lucide-react';

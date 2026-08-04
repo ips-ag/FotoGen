@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Loader2 } from 'lucide-react';
 import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { AuthGuard } from '@/auth/AuthGuard';
