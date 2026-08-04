@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router';
 import { useIsAuthenticated } from '@azure/msal-react';
 import Layout from '@/components/Layout';
 import HomePage from './HomePage';

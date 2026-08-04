@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Building2 } from 'lucide-react';
 import { LoginButton } from '@/auth/LoginButton';
 import { useIsAuthenticated, useMsal } from '@azure/msal-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router';
 
 const LoginPage = () => {
   const isAuthenticated = useIsAuthenticated();
