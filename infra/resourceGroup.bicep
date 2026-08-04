@@ -196,7 +196,7 @@ resource keyVaultSecretsUserRoleAssignment 'Microsoft.Authorization/roleAssignme
 resource uiWebAppConfig 'Microsoft.Web/sites/config@2024-04-01' = {
   name: '${uiWebApp.name}/web'
   properties: {
-    linuxFxVersion: 'NODE|22-lts'
+    linuxFxVersion: 'NODE|24-lts'
     appCommandLine: uiCustomCommand
   }
 }
