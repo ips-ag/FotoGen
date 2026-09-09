@@ -16,7 +16,7 @@ param clientAffinityEnabled bool = false
 @description('Optional. Allow only HTTPS traffic.')
 param httpsOnly bool = true
 
-@description('Optional. Enable Always On. Defaults to null (omitted), which is required on plans, such as Free, that do not support Always On.')
+@description('Optional. Enable Always On. Defaults to null (omitted)')
 param alwaysOn bool?
 
 @allowed([

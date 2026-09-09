@@ -139,7 +139,7 @@ module communicationServices 'communicationServices.bicep' = {
   }
 }
 
-// Free (F1) plan doesn't support Always On - the setting must be omitted, not just disabled.
+// Free (F1) plan doesn't support Always On
 var webAppAlwaysOn = appServicePlanSku == 'F1' ? null : true
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2024-04-01' = {
