@@ -36,15 +36,14 @@ resource webApp 'Microsoft.Web/sites@2024-04-01' = {
   identity: useManagedIdentity ? {
     type: 'SystemAssigned'
   } : null
-  properties: union({
+  properties: {
     serverFarmId: appServicePlanId
     clientAffinityEnabled: clientAffinityEnabled
     httpsOnly: httpsOnly
-  }, alwaysOn == null ? {} : {
-    siteConfig: {
+    siteConfig: alwaysOn == null ? null : {
       alwaysOn: alwaysOn
     }
-  })
+  }
   kind: kind
 }
 
