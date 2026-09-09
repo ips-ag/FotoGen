@@ -33,15 +33,17 @@ resource webApp 'Microsoft.Web/sites@2024-04-01' = {
   name: name
   location: location
   tags: tags
-  identity: useManagedIdentity ? {
-    type: 'SystemAssigned'
-  } : null
+  identity: useManagedIdentity
+    ? {
+        type: 'SystemAssigned'
+      }
+    : null
   properties: {
     serverFarmId: appServicePlanId
     clientAffinityEnabled: clientAffinityEnabled
     httpsOnly: httpsOnly
-    siteConfig: alwaysOn == null ? null : {
-      alwaysOn: alwaysOn
+    siteConfig: {
+      alwaysOn: alwaysOn == null ? null : alwaysOn
     }
   }
   kind: kind
