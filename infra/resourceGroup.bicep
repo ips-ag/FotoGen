@@ -139,7 +139,8 @@ module communicationServices 'communicationServices.bicep' = {
   }
 }
 
-var alwaysOnEnabled = appServicePlanSku != 'F1'
+// Free (F1) plan doesn't support Always On
+var webAppAlwaysOn = appServicePlanSku == 'F1' ? null : true
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2024-04-01' = {
   name: appServicePlanName
@@ -164,7 +165,7 @@ module uiWebApp 'webApp.bicep' = {
     appServicePlanId: appServicePlan.id
     clientAffinityEnabled: false
     httpsOnly: true
-    alwaysOn: alwaysOnEnabled
+    alwaysOn: webAppAlwaysOn
     kind: 'app,linux'
   }
 }
@@ -179,7 +180,7 @@ module apiWebApp 'webApp.bicep' = {
     appServicePlanId: appServicePlan.id
     clientAffinityEnabled: false
     httpsOnly: true
-    alwaysOn: alwaysOnEnabled
+    alwaysOn: webAppAlwaysOn
     kind: 'app,linux'
     useManagedIdentity: true
   }
