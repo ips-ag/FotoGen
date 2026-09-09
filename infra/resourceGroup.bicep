@@ -88,7 +88,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-resource keyVault 'Microsoft.KeyVault/vaults@2024-11-01' = {
+resource keyVault 'Microsoft.KeyVault/vaults@2026-02-01' = {
   name: keyVaultName
   location: location
   tags: tags
@@ -110,7 +110,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2024-11-01' = {
   }
 }
 
-resource _ 'Microsoft.KeyVault/vaults/secrets@2024-11-01' = {
+resource _ 'Microsoft.KeyVault/vaults/secrets@2026-02-01' = {
   parent: keyVault
   name: 'ApplicationInsights--ConnectionString'
   properties: {
@@ -142,7 +142,7 @@ module communicationServices 'communicationServices.bicep' = {
 // Free (F1) plan doesn't support Always On
 var webAppAlwaysOn = appServicePlanSku == 'F1' ? null : true
 
-resource appServicePlan 'Microsoft.Web/serverfarms@2024-04-01' = {
+resource appServicePlan 'Microsoft.Web/serverfarms@2025-03-01' = {
   name: appServicePlanName
   location: location
   tags: tags
@@ -165,7 +165,6 @@ module uiWebApp 'webApp.bicep' = {
     appServicePlanId: appServicePlan.id
     clientAffinityEnabled: false
     httpsOnly: true
-    alwaysOn: webAppAlwaysOn
     kind: 'app,linux'
   }
 }
@@ -180,7 +179,6 @@ module apiWebApp 'webApp.bicep' = {
     appServicePlanId: appServicePlan.id
     clientAffinityEnabled: false
     httpsOnly: true
-    alwaysOn: webAppAlwaysOn
     kind: 'app,linux'
     useManagedIdentity: true
   }
@@ -199,20 +197,21 @@ resource keyVaultSecretsUserRoleAssignment 'Microsoft.Authorization/roleAssignme
   }
 }
 
-resource uiWebAppConfig 'Microsoft.Web/sites/config@2024-04-01' = {
+resource uiWebAppConfig 'Microsoft.Web/sites/config@2025-03-01' = {
   name: '${uiWebApp.name}/web'
   properties: {
     linuxFxVersion: 'NODE|24-lts'
     appCommandLine: uiCustomCommand
+    alwaysOn: webAppAlwaysOn == null ? null : webAppAlwaysOn
   }
 }
 
-resource apiWebAppConfig 'Microsoft.Web/sites/config@2024-04-01' = {
+resource apiWebAppConfig 'Microsoft.Web/sites/config@2025-03-01' = {
   name: '${apiWebApp.name}/web'
   dependsOn: [keyVaultSecretsUserRoleAssignment]
   properties: {
     linuxFxVersion: 'DOTNETCORE|10.0'
-    alwaysOn: true
+    alwaysOn: webAppAlwaysOn == null ? null : webAppAlwaysOn
     appCommandLine: apiCustomCommand
     cors: {
       allowedOrigins: [uiWebApp.outputs.endpoint]

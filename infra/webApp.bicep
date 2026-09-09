@@ -16,9 +16,6 @@ param clientAffinityEnabled bool = false
 @description('Optional. Allow only HTTPS traffic.')
 param httpsOnly bool = true
 
-@description('Optional. Enable Always On. Defaults to null (omitted)')
-param alwaysOn bool?
-
 @allowed([
   'app,linux'
   'app,linux,container'
@@ -29,7 +26,7 @@ param kind string = 'app,linux'
 @description('Optional. Enable system-assigned managed identity.')
 param useManagedIdentity bool = false
 
-resource webApp 'Microsoft.Web/sites@2024-04-01' = {
+resource webApp 'Microsoft.Web/sites@2025-03-01' = {
   name: name
   location: location
   tags: tags
@@ -42,11 +39,6 @@ resource webApp 'Microsoft.Web/sites@2024-04-01' = {
     serverFarmId: appServicePlanId
     clientAffinityEnabled: clientAffinityEnabled
     httpsOnly: httpsOnly
-    siteConfig: alwaysOn == null
-      ? null
-      : {
-          alwaysOn: alwaysOn
-        }
   }
   kind: kind
 }
