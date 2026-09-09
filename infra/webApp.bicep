@@ -42,9 +42,11 @@ resource webApp 'Microsoft.Web/sites@2024-04-01' = {
     serverFarmId: appServicePlanId
     clientAffinityEnabled: clientAffinityEnabled
     httpsOnly: httpsOnly
-    siteConfig: {
-      alwaysOn: alwaysOn == null ? null : alwaysOn
-    }
+    siteConfig: alwaysOn == null
+      ? null
+      : {
+          alwaysOn: alwaysOn
+        }
   }
   kind: kind
 }
