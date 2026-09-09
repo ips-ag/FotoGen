@@ -22,7 +22,7 @@ param emailCommunicationServiceName string = 'acs-${projectName}-${env}'
 @description('Optional. The domain name for the managed email service.')
 param emailDomainName string = 'AzureManagedDomain'
 
-resource emailCommunicationService 'Microsoft.Communication/emailServices@2023-04-01' = {
+resource emailCommunicationService 'Microsoft.Communication/emailServices@2026-03-18' = {
   name: emailCommunicationServiceName
   location: 'global'
   tags: tags
@@ -40,7 +40,7 @@ resource emailCommunicationService 'Microsoft.Communication/emailServices@2023-0
   }
 }
 
-resource communicationServices 'Microsoft.Communication/communicationServices@2023-04-01' = {
+resource communicationServices 'Microsoft.Communication/communicationServices@2026-03-18' = {
   name: communicationServicesName
   location: 'global'
   tags: tags
@@ -50,14 +50,14 @@ resource communicationServices 'Microsoft.Communication/communicationServices@20
   }
 }
 
-resource _ 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+resource _ 'Microsoft.KeyVault/vaults/secrets@2026-02-01' = {
   name: '${keyVaultName}/CommunicationServices--ConnectionString'
   properties: {
     value: communicationServices.listKeys().primaryConnectionString
   }
 }
 
-resource keyVaultSecretSenderEmail 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+resource keyVaultSecretSenderEmail 'Microsoft.KeyVault/vaults/secrets@2026-02-01' = {
   name: '${keyVaultName}/Email--SenderAddress'
   properties: {
     value: 'DoNotReply@${emailCommunicationService::emailDomain.properties.mailFromSenderDomain}'

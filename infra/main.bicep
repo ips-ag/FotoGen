@@ -23,7 +23,7 @@ param tags object = {}
 var env = toLower(environment)
 var deploymentName = deployment().name
 
-resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-11-01' = {
+resource resourceGroup 'Microsoft.Resources/resourceGroups@2025-04-01' = {
   name: rgName
   location: location
 }

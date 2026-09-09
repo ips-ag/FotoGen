@@ -13,7 +13,7 @@ param daysSoftDelete int = 7
 @description('Required. The name of the Key Vault to store the connection string.')
 param keyVaultName string
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2024-01-01' = {
+resource storageAccount 'Microsoft.Storage/storageAccounts@2026-04-01' = {
   name: storageAccountName
   location: location
   tags: tags
@@ -73,11 +73,11 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2024-01-01' = {
   }
 }
 
-resource keyVault 'Microsoft.KeyVault/vaults@2024-11-01' existing = {
+resource keyVault 'Microsoft.KeyVault/vaults@2026-02-01' existing = {
   name: keyVaultName
 }
 
-resource storageConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2024-11-01' = {
+resource storageConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2026-02-01' = {
   parent: keyVault
   name: 'Storage--ConnectionString'
   properties: {
