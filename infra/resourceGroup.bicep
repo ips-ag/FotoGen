@@ -23,10 +23,11 @@ param appServicePlanName string = 'asp-${projectName}-${env}'
 
 @description('Optional. The SKU for the App Service Plan.')
 @allowed([
+  'F1'
   'B1'
   'P1'
 ])
-param appServicePlanSku string = 'B1'
+param appServicePlanSku string = 'F1'
 
 @description('Optional. The name of the UI App Service to create.')
 param uiWebAppName string = 'app-${projectName}-ui-${env}'
@@ -138,6 +139,8 @@ module communicationServices 'communicationServices.bicep' = {
   }
 }
 
+var alwaysOnEnabled = appServicePlanSku != 'F1'
+
 resource appServicePlan 'Microsoft.Web/serverfarms@2024-04-01' = {
   name: appServicePlanName
   location: location
@@ -161,6 +164,7 @@ module uiWebApp 'webApp.bicep' = {
     appServicePlanId: appServicePlan.id
     clientAffinityEnabled: false
     httpsOnly: true
+    alwaysOn: alwaysOnEnabled
     kind: 'app,linux'
   }
 }
@@ -175,6 +179,7 @@ module apiWebApp 'webApp.bicep' = {
     appServicePlanId: appServicePlan.id
     clientAffinityEnabled: false
     httpsOnly: true
+    alwaysOn: alwaysOnEnabled
     kind: 'app,linux'
     useManagedIdentity: true
   }
