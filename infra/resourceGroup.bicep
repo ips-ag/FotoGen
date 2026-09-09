@@ -165,7 +165,6 @@ module uiWebApp 'webApp.bicep' = {
     appServicePlanId: appServicePlan.id
     clientAffinityEnabled: false
     httpsOnly: true
-    alwaysOn: webAppAlwaysOn
     kind: 'app,linux'
   }
 }
@@ -180,7 +179,6 @@ module apiWebApp 'webApp.bicep' = {
     appServicePlanId: appServicePlan.id
     clientAffinityEnabled: false
     httpsOnly: true
-    alwaysOn: webAppAlwaysOn
     kind: 'app,linux'
     useManagedIdentity: true
   }
@@ -204,6 +202,7 @@ resource uiWebAppConfig 'Microsoft.Web/sites/config@2025-03-01' = {
   properties: {
     linuxFxVersion: 'NODE|24-lts'
     appCommandLine: uiCustomCommand
+    alwaysOn: webAppAlwaysOn == null ? null : webAppAlwaysOn
   }
 }
 
@@ -212,7 +211,7 @@ resource apiWebAppConfig 'Microsoft.Web/sites/config@2025-03-01' = {
   dependsOn: [keyVaultSecretsUserRoleAssignment]
   properties: {
     linuxFxVersion: 'DOTNETCORE|10.0'
-    alwaysOn: true
+    alwaysOn: webAppAlwaysOn == null ? null : webAppAlwaysOn
     appCommandLine: apiCustomCommand
     cors: {
       allowedOrigins: [uiWebApp.outputs.endpoint]

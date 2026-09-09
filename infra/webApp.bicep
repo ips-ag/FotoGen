@@ -16,9 +16,6 @@ param clientAffinityEnabled bool = false
 @description('Optional. Allow only HTTPS traffic.')
 param httpsOnly bool = true
 
-@description('Optional. Enable Always On. Defaults to null (omitted)')
-param alwaysOn bool?
-
 @allowed([
   'app,linux'
   'app,linux,container'
@@ -44,13 +41,6 @@ resource webApp 'Microsoft.Web/sites@2025-03-01' = {
     httpsOnly: httpsOnly
   }
   kind: kind
-
-  resource siteConfig 'config' = if (alwaysOn != null) {
-    name: 'web'
-    properties: {
-      alwaysOn: alwaysOn
-    }
-  }
 }
 
 output endpoint string = 'https://${webApp.properties.defaultHostName}'
